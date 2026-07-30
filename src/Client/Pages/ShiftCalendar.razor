@@ -70,6 +70,12 @@ else
                                                 OnClick="@(() => OpenAssignDialog(shift))" />
                                         </Authorized>
                                     </AuthorizeView>
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Comment"
+                                        OnClick="@(() => OpenNotesDialog(shift))" />
+                                    @if (shift.NoteCount > 0)
+                                    {
+                                        <MudText Typo="Typo.caption">@shift.NoteCount</MudText>
+                                    }
                                 }
                             </td>
                         }

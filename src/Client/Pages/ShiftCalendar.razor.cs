@@ -143,5 +143,20 @@ public partial class ShiftCalendar
         }
     }
 
+    private async Task OpenNotesDialog(ShiftDto shift)
+    {
+        var parameters = new DialogParameters<ShiftNotesDialog>
+        {
+            { d => d.ShiftId, shift.Id },
+            { d => d.ShiftLabel, $"{shift.ShiftType} — {shift.Date:ddd, MMM d}" }
+        };
+        var result = await DialogService.ShowAsync<ShiftNotesDialog>("Notes", parameters);
+        var dialogResult = await result.Result;
+        if (dialogResult is { Canceled: false, Data: true })
+        {
+            await LoadShiftsAsync();
+        }
+    }
+
     private static DateOnly StartOfWeek(DateOnly date) => date.AddDays(-(int)date.DayOfWeek);
 }

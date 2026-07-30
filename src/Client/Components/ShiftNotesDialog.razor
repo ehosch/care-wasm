@@ -1,0 +1,42 @@
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-2">@ShiftLabel</MudText>
+
+        @if (_loading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else
+        {
+            @if (_notes.Count == 0)
+            {
+                <MudText Typo="Typo.body2" Class="mb-2">No notes yet.</MudText>
+            }
+            else
+            {
+                <MudList T="string" Class="mb-2">
+                    @foreach (var note in _notes)
+                    {
+                        <MudListItem T="string">
+                            <MudText Typo="Typo.body2"><b>@note.AuthorName</b> — @note.CreatedAt.ToLocalTime().ToString("g")</MudText>
+                            <MudText>@note.Text</MudText>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+        }
+
+        <MudTextField T="string" Label="Add a note" Variant="Variant.Outlined" @bind-Value="_newNoteText" Lines="2" />
+
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Close</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_posting" OnClick="PostAsync">Post</MudButton>
+    </DialogActions>
+</MudDialog>

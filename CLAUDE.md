@@ -128,6 +128,28 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
   user by decoding `localStorage.getItem('authToken')`'s JWT payload before
   trusting a test result.
 
+## Phase 5 (Shift Notes)
+
+- `Components/ShiftNotesDialog.razor`/`.razor.cs` (new) — loads
+  `IShiftsClient.GetNotesAsync` on open, renders the thread, and posts new
+  notes via `AddNoteAsync`, appending the returned `ShiftNoteDto` to the
+  local list directly rather than reloading. **Deliberately does not close
+  after posting** (unlike every other dialog in this app) — a comment
+  thread's natural use is posting more than one note in a visit, so the
+  "Post" button stays separate from "Close."
+- `Close()` calls `MudDialog.Close(DialogResult.Ok(_anyPosted))` — the
+  caller (`ShiftCalendar.razor.cs`'s `OpenNotesDialog`) checks
+  `dialogResult is { Canceled: false, Data: true }` before reloading the
+  week, so opening a thread and closing it without posting doesn't trigger
+  a pointless refetch. This is a different check than the other
+  dialogs use (`Canceled: false` alone) precisely because "Close" here
+  isn't a cancel/confirm choice — it's the only exit, so the payload
+  carries whether anything actually changed.
+- `Pages/ShiftCalendar.razor` — every cell (any status) gets a small
+  comment-icon button plus a `shift.NoteCount` caption when nonzero, not
+  gated by `AuthorizeView` — notes are readable/postable by anyone,
+  regardless of admin role or shift assignment.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -244,6 +266,7 @@ place, silently serving the old baked-in URL.
 See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold),
 Phase 1 (Auth & Users — invite/register/roles/forgot-password), Phase 2
 (Documents — upload/replace/delete/version-history), Phase 3 (Care Calendar
-Core — week-grid view, admin direct-assign), and Phase 4 (Self-Assign &
-Replacement Requests — claim, request/cancel/claim replacement, open queue)
-are done. No shift notes UI yet.
+Core — week-grid view, admin direct-assign), Phase 4 (Self-Assign &
+Replacement Requests — claim, request/cancel/claim replacement, open queue),
+and Phase 5 (Shift Notes — per-shift comment thread) are done. Only SMS/email
+notification dispatch remains from the original spec.
