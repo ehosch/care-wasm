@@ -95,6 +95,39 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
   `CLAUDE_CARE.md`'s Phase 7 "mobile-responsive pass on the calendar view" —
   don't spend time on it before then.
 
+## Phase 4 pages (Self-Assign & Replacement Requests)
+
+- `Pages/ShiftCalendar.razor`/`.razor.cs` — extended with the current
+  user's id (`ClaimTypes.NameIdentifier`, same pattern as `Users.razor.cs`'s
+  `CurrentUserId`), used to decide per-cell what to show: a "Claim" button
+  on any `Open` shift (everyone), a "Request replacement" button when
+  `shift.AssignedUserId == currentUserId` and `Status == Assigned`, or a
+  "Cancel request" button when `shift.PendingReplacementRequestedByUserId
+  == currentUserId` and `Status == ReplacementRequested`. Admin's Edit icon
+  is unchanged from Phase 3 and still works in every state as the override
+  path.
+- `Components/RequestReplacementDialog.razor` — single optional Reason
+  field, mirrors `InviteDialog.razor`'s simplicity (inline `@code`, no
+  separate code-behind file needed for a dialog this small).
+- `Pages/ReplacementQueue.razor`/`.razor.cs` (`/replacement-requests`,
+  `[Authorize]`, no role restriction) — `MudTable` of pending requests;
+  "Cancel" on the current user's own rows, "Claim" on everyone else's
+  (client-side `RequestedByUserId == _currentUserId` check, same idea as
+  `Users.razor`'s `context.Id != CurrentUserId` check for hiding your own
+  role-editor).
+- `Layout/NavMenu.razor` — "Replacement Requests" link added after
+  "Calendar", not role-restricted (every member needs to reach it).
+- **Debugging the assign/claim/request UI requires actually re-logging-in
+  as the target user, not just navigating in a tab that's still holding a
+  different user's cached token.** `authToken`/`refreshToken` live in
+  `localStorage`, shared per-origin across every tab — opening a second tab
+  to "act as Member B" without an explicit fresh login (or a
+  `localStorage.clear()` first) silently keeps testing as whoever was last
+  logged in on that origin, producing confusing "the button isn't showing"
+  false alarms that look like a code bug but aren't. Verify the actually-active
+  user by decoding `localStorage.getItem('authToken')`'s JWT payload before
+  trusting a test result.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -210,6 +243,7 @@ place, silently serving the old baked-in URL.
 
 See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold),
 Phase 1 (Auth & Users — invite/register/roles/forgot-password), Phase 2
-(Documents — upload/replace/delete/version-history), and Phase 3 (Care
-Calendar Core — week-grid view, admin direct-assign) are done. No
-self-assign/replacement-request or notes UI yet.
+(Documents — upload/replace/delete/version-history), Phase 3 (Care Calendar
+Core — week-grid view, admin direct-assign), and Phase 4 (Self-Assign &
+Replacement Requests — claim, request/cancel/claim replacement, open queue)
+are done. No shift notes UI yet.

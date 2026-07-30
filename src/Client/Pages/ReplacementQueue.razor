@@ -1,0 +1,42 @@
+@page "/replacement-requests"
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<PageTitle>Replacement Requests</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Replacement Requests</MudText>
+
+<MudTable Items="@_requests" Loading="@_loading" Hover="true">
+    <HeaderContent>
+        <MudTh>Shift</MudTh>
+        <MudTh>Requested by</MudTh>
+        <MudTh>Reason</MudTh>
+        <MudTh>Requested</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Shift">@context.ShiftType — @context.ShiftDate.ToString("ddd, MMM d")</MudTd>
+        <MudTd DataLabel="Requested by">@context.RequestedByName</MudTd>
+        <MudTd DataLabel="Reason">@context.Reason</MudTd>
+        <MudTd DataLabel="Requested">@context.CreatedAt.ToLocalTime().ToString("g")</MudTd>
+        <MudTd>
+            @if (context.RequestedByUserId == _currentUserId)
+            {
+                <MudButton Size="Size.Small" Color="Color.Error" OnClick="@(() => CancelAsync(context))">Cancel</MudButton>
+            }
+            else
+            {
+                <MudButton Size="Size.Small" Color="Color.Primary" OnClick="@(() => ClaimAsync(context))">Claim</MudButton>
+            }
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@if (!_loading && _requests.Count == 0)
+{
+    <MudText Typo="Typo.body2" Class="mt-4">No open replacement requests.</MudText>
+}
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+}

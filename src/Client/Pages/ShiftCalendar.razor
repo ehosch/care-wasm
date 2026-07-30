@@ -48,6 +48,22 @@ else
                                 else
                                 {
                                     <MudText>@(shift.AssignedUserName ?? "Open")</MudText>
+                                    @if (shift.Status == ShiftStatus.Open)
+                                    {
+                                        <MudButton Size="Size.Small" OnClick="@(() => ClaimAsync(shift))">Claim</MudButton>
+                                    }
+                                    else if (shift.Status == ShiftStatus.Assigned && shift.AssignedUserId == _currentUserId)
+                                    {
+                                        <MudButton Size="Size.Small" OnClick="@(() => OpenRequestReplacementDialog(shift))">Request replacement</MudButton>
+                                    }
+                                    else if (shift.Status == ShiftStatus.ReplacementRequested)
+                                    {
+                                        <MudText Typo="Typo.caption">Replacement requested</MudText>
+                                        @if (shift.PendingReplacementRequestedByUserId == _currentUserId)
+                                        {
+                                            <MudButton Size="Size.Small" Color="Color.Error" OnClick="@(() => CancelReplacementRequestAsync(shift))">Cancel request</MudButton>
+                                        }
+                                    }
                                     <AuthorizeView Roles="Admin" Context="authContext">
                                         <Authorized>
                                             <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit"

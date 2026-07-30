@@ -1,0 +1,56 @@
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-2">@ShiftLabel</MudText>
+        <MudTextField T="string" Label="Reason (optional)" Variant="Variant.Outlined" @bind-Value="_reason" Lines="2" />
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SubmitAsync">Request Replacement</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Inject]
+    private IShiftsClient ShiftsClient { get; set; } = default!;
+
+    [Parameter]
+    public Guid ShiftId { get; set; }
+
+    [Parameter]
+    public string ShiftLabel { get; set; } = string.Empty;
+
+    private string _reason = string.Empty;
+    private bool _busy;
+    private string? _errorMessage;
+
+    private async Task SubmitAsync()
+    {
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            string? reason = string.IsNullOrWhiteSpace(_reason) ? null : _reason;
+            await ShiftsClient.CreateReplacementRequestAsync(ShiftId, null, new CreateReplacementRequestRequest { Reason = reason });
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

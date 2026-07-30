@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using Care.Wasm.Client.Components;
 using Care.Wasm.Client.Infrastructure.ApiClient;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 
 namespace Care.Wasm.Client.Pages;
@@ -13,18 +15,28 @@ public partial class ShiftCalendar
     private IShiftsClient ShiftsClient { get; set; } = default!;
 
     [Inject]
+    private IReplacementRequestsClient ReplacementRequestsClient { get; set; } = default!;
+
+    [Inject]
     private IDialogService DialogService { get; set; } = default!;
+
+    [Inject]
+    private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
     private DateOnly _weekStart;
     private ICollection<ShiftDto> _shifts = new List<ShiftDto>();
     private bool _loading = true;
     private string? _errorMessage;
+    private string? _currentUserId;
 
     private string WeekRangeLabel =>
         $"{_weekStart:MMM d} – {_weekStart.AddDays(6):MMM d, yyyy}";
 
     protected override async Task OnInitializedAsync()
     {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
         _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
         await LoadShiftsAsync();
     }
@@ -82,6 +94,52 @@ public partial class ShiftCalendar
         if (dialogResult is { Canceled: false })
         {
             await LoadShiftsAsync();
+        }
+    }
+
+    private async Task ClaimAsync(ShiftDto shift)
+    {
+        try
+        {
+            await ShiftsClient.ClaimAsync(shift.Id, null);
+            await LoadShiftsAsync();
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+    }
+
+    private async Task OpenRequestReplacementDialog(ShiftDto shift)
+    {
+        var parameters = new DialogParameters<RequestReplacementDialog>
+        {
+            { d => d.ShiftId, shift.Id },
+            { d => d.ShiftLabel, $"{shift.ShiftType} — {shift.Date:ddd, MMM d}" }
+        };
+        var result = await DialogService.ShowAsync<RequestReplacementDialog>("Request replacement", parameters);
+        var dialogResult = await result.Result;
+        if (dialogResult is { Canceled: false })
+        {
+            await LoadShiftsAsync();
+        }
+    }
+
+    private async Task CancelReplacementRequestAsync(ShiftDto shift)
+    {
+        if (shift.PendingReplacementRequestId is not { } requestId)
+        {
+            return;
+        }
+
+        try
+        {
+            await ReplacementRequestsClient.CancelAsync(requestId, null);
+            await LoadShiftsAsync();
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
         }
     }
 

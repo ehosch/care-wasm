@@ -10,14 +10,16 @@ client.
 
 ## Status
 
-Phase 0 (scaffold), Phase 1 (Auth & Users), Phase 2 (Documents), and Phase 3
-(Care Calendar Core) are done — login, a Users page
-(invite/resend/revoke/change role, Admin only), self-service registration
-from an invite link, forgot/reset password, a Documents page
-(upload/replace/delete/version-history for Admins, view and download for
-everyone), and a Calendar page (week-grid view of Day/Evening/Overnight
-shifts, admin direct-assign) all work. Self-assign/replacement requests and
-shift notes described in the backend's roadmap don't exist yet. See
+Phase 0 (scaffold), Phase 1 (Auth & Users), Phase 2 (Documents), Phase 3
+(Care Calendar Core), and Phase 4 (Self-Assign & Replacement Requests) are
+done — login, a Users page (invite/resend/revoke/change role, Admin only),
+self-service registration from an invite link, forgot/reset password, a
+Documents page (upload/replace/delete/version-history for Admins, view and
+download for everyone), a Calendar page (week-grid view of
+Day/Evening/Overnight shifts, self-claim of open shifts, admin
+direct-assign), and a Replacement Requests page (open-queue view, claim,
+cancel-your-own) all work. Shift notes described in the backend's roadmap
+don't exist yet. See
 `care-webapi`'s README for the default admin login used on first run.
 
 ## Quickstart (full stack)
