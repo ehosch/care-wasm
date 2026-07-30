@@ -12,8 +12,17 @@ src/
 ├── Host/                  # ASP.NET Core host serving the WASM app (WebAssembly.Server)
 ├── Client/                # Blazor WASM app — Layout/ (BaseLayout, MainLayout, NotFound, NavMenu), Pages/
 ├── Client.Infrastructure/  # NSwag-generated API client, JWT auth (AuthenticationStateProvider), MudBlazor DI
-└── Shared/                 # Empty for now — will hold DTOs synced from care-webapi once Phase 1 adds them
+└── Shared/                 # Still empty — DTOs live in the NSwag-generated client instead
 ```
+
+## Phase 1 pages (Auth & Users)
+
+- `Pages/Users.razor` (`/users`, `[Authorize(Roles="Admin")]`) — list all
+  users, invite (`Components/InviteDialog.razor`), resend/revoke invite,
+  change role (blocked for your own row — see gotcha below).
+- `Pages/Register.razor` (`/register?token=`, anonymous) — completes an invite.
+- `Pages/ForgotPassword.razor` / `Pages/ResetPassword.razor` (anonymous).
+- `Layout/NavMenu.razor` — "Users" link wrapped in `<AuthorizeView Roles="Admin">`.
 
 **MudBlazor provider order** (hard MudBlazor 7 requirement, applied from day
 one): `MudThemeProvider` → `MudPopoverProvider` → `MudDialogProvider` →
@@ -34,13 +43,24 @@ concept). Caches token/refresh token in local storage via `Blazored.LocalStorage
 No permissions-claim caching yet (care only has 2 roles — `Admin`/`Member` —
 surfaced as a plain `ClaimTypes.Role` claim decoded from the JWT).
 
+**`Auth/Jwt/JwtAuthenticationHeaderHandler.cs` keeps an explicit allowlist of
+`[AllowAnonymous]` server routes** (`AnonymousPaths`) that skip the
+force-navigate-to-`/login` behavior when no token is cached. Found this the
+hard way: the handler originally only excluded `/api/tokens`, so calling
+`forgot-password`/`reset-password`/`register` while logged out (no cached
+token, which is the normal case for those pages) redirected straight to
+`/login` before the anonymous API call ever completed. **Any new
+`[AllowAnonymous]` controller action added to care-webapi must be added to
+this list too**, or it'll silently misbehave the same way for logged-out
+users.
+
 ## NSwag client generation
 
 Convention (same as gatekeeper): the generated `ApiClient/CareApi.cs` holds
 interface + client class definitions (regenerated wholesale); **hand-written
 method extensions/overrides go in a separate `CareApi.Extensions.cs` partial
-class** so they survive regeneration — none exist yet since no controllers
-beyond `TokensController` exist in care-webapi.
+class** so they survive regeneration — none needed yet, `IUsersClient`'s
+generated methods are used as-is.
 
 ```powershell
 # 1. Start care-webapi first (dotnet run --project src/Host, or dockerized)
@@ -66,12 +86,36 @@ Generated client methods take a leading `string? api_version` parameter (from
 `Asp.Versioning`'s URL substitution) — always pass `null` unless a specific
 version is required, e.g. `_tokensClient.GetTokenAsync(null, request)`.
 
+**A controller action returning a bare `Ok()`/`IActionResult` with no
+`[ProducesResponseType]` generates a `Task<FileResponse>` client method**,
+not `Task` — ASP.NET Core's default OpenAPI generation infers an
+`application/octet-stream` response for an untyped 200. care-webapi's
+`UsersController` adds `[ProducesResponseType(StatusCodes.Status200OK)]` to
+every action that just returns `Ok()`, specifically to keep the generated
+client methods as plain `Task`. Do the same for any new no-body endpoint.
+
 ## Common commands
 
 ```bash
 dotnet build
-dotnet run --project src/Host          # dev ports: http 5101, https 7101
+dotnet run --project src/Host --launch-profile http   # dev port: 5101
 ```
+
+`appsettings.Development.json`'s `ApiBaseUrl` points at
+`http://localhost:5100/` (care-webapi's **http** dev port), not https —
+deliberately, to avoid the self-signed dev cert. A WASM `fetch()` to an
+untrusted-cert https origin fails with an opaque `TypeError: Failed to fetch`
+in the browser console with no HTTP status to debug from, and Chrome's cert
+interstitial isn't scriptable by browser-automation tooling either. If you
+need to test the https path specifically, visit the API's https URL directly
+first and click through the cert warning to trust it for the session, then
+switch `ApiBaseUrl` back.
+
+`src/Host/Properties/launchSettings.json` was originally left at the
+template's random auto-generated ports (5162/7034) instead of the documented
+5101/7101 — fixed once discovered (via cors.json's allowed origins not
+matching what the app was actually running on). If dev login ever fails with
+a CORS error, check these two files agree with each other.
 
 ## Docker
 
@@ -96,6 +140,6 @@ place, silently serving the old baked-in URL.
 
 ## Roadmap
 
-See `../CLAUDE_CARE.md` for the full phased plan. This scaffold (Phase 0) has
-only a login page and an empty home page — no shift calendar, documents, or
-notes UI yet.
+See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold) and
+Phase 1 (Auth & Users — invite/register/roles/forgot-password) are done. No
+shift calendar, documents, or notes UI yet.

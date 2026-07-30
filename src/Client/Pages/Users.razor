@@ -1,0 +1,50 @@
+@page "/users"
+@attribute [Authorize(Roles = "Admin")]
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<PageTitle>Users</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Users</MudText>
+
+<MudTable Items="@_users" Loading="@_loading" Hover="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd"
+            OnClick="OpenInviteDialog">
+            Invite
+        </MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Role</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Role">@context.Role</MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd>
+            @if (context.Status == "Invited")
+            {
+                <MudButton Size="Size.Small" OnClick="@(() => ResendInviteAsync(context))">Resend</MudButton>
+                <MudButton Size="Size.Small" Color="Color.Error" OnClick="@(() => RevokeInviteAsync(context))">Revoke</MudButton>
+            }
+            else if (context.Id != CurrentUserId)
+            {
+                <MudSelect T="string" Value="@context.Role" ValueChanged="@((string role) => ChangeRoleAsync(context, role))"
+                    Dense="true" Margin="Margin.Dense" Style="width: 140px; display: inline-block;">
+                    <MudSelectItem Value="@("Admin")">Admin</MudSelectItem>
+                    <MudSelectItem Value="@("Member")">Member</MudSelectItem>
+                </MudSelect>
+            }
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+}

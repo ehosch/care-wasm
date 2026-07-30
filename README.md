@@ -10,9 +10,11 @@ client.
 
 ## Status
 
-Early scaffold (Phase 0) — login and JWT auth are wired up, but the shift
-calendar, documents, and notes UI described in the backend's roadmap don't
-exist yet.
+Phase 0 (scaffold) and Phase 1 (Auth & Users) are done — login, a Users page
+(invite/resend/revoke/change role, Admin only), self-service registration
+from an invite link, and forgot/reset password all work. The shift calendar,
+documents, and notes UI described in the backend's roadmap don't exist yet.
+See `care-webapi`'s README for the default admin login used on first run.
 
 ## Quickstart (full stack)
 
@@ -33,10 +35,13 @@ already running elsewhere).
 
 ### Local development
 
-1. Start `care-webapi` first (see its README).
-2. Update `src/Client/wwwroot/appsettings.Development.json`'s `ApiBaseUrl` to
-   match wherever the API is running.
-3. `dotnet run --project src/Host`
+1. Start `care-webapi` first (see its README) — `dotnet run --project src/Host`.
+2. `appsettings.Development.json`'s `ApiBaseUrl` already points at
+   `http://localhost:5100/` (care-webapi's default http dev port). Update it
+   if you're running the API somewhere else.
+3. `dotnet run --project src/Host --launch-profile http` (dev port `5101`).
+   Use the `http` profile, not `https` — see Troubleshooting if you need the
+   https path specifically.
 
 ### Regenerating the API client
 
@@ -77,6 +82,13 @@ the image is public.** A stale `docker login ghcr.io` credential (e.g. an
 expired or insufficiently-scoped personal access token from an unrelated
 project) takes precedence over anonymous pull. Fix: `docker logout ghcr.io`,
 then retry.
+
+**Login fails with `TypeError: Failed to fetch` in local dev.** `ApiBaseUrl`
+points at an `https://` origin with an untrusted self-signed dev certificate.
+The browser blocks the request with no usable HTTP status to debug from.
+Point `ApiBaseUrl` at care-webapi's **http** dev port instead (the default),
+or visit the API's https URL directly first and click through the cert
+warning to trust it for the session.
 
 ## License
 

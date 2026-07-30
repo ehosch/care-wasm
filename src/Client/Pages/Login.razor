@@ -23,6 +23,10 @@
                 Sign In
             </MudButton>
         </MudItem>
+        <MudItem xs="12" Class="d-flex justify-center">
+            @* MudButton's Link prop is silently swallowed inside an EditForm — use OnClick instead. *@
+            <MudButton OnClick="@(() => Navigation.NavigateTo("/forgot-password"))">Forgot password?</MudButton>
+        </MudItem>
     </MudGrid>
 </EditForm>
 
