@@ -64,6 +64,37 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
   wrapping each icon button instead, to keep the 0-warnings bar this
   codebase holds itself to.
 
+## Phase 3 pages (Care Calendar)
+
+- `Pages/ShiftCalendar.razor` (`/calendar`, `[Authorize]`, no role
+  restriction) — prev/this-week/next-week navigation over a plain HTML
+  table (Sunday-start, 3 rows for Day/Evening/Overnight × 7 day columns).
+  Read-only for everyone; Admins additionally get a per-cell edit icon
+  (`<AuthorizeView Roles="Admin" Context="authContext">`, same
+  Context-clash fix as the Documents page) opening
+  `Components/AssignShiftDialog.razor`.
+- `Components/AssignShiftDialog.razor`/`.razor.cs` — a `MudSelect` of active
+  users (from `IUsersClient.GetUsersAsync`, filtered `Status == "Active"`)
+  plus an "Open (unassigned)" option, calling
+  `IShiftsClient.AssignAsync(shiftId, null, new AssignShiftRequest { UserId = ... })`.
+- **`MudSelect`'s floating `Label` doesn't shrink reliably with a one-way
+  `Value`/`ValueChanged` binding when the selected item's display text is
+  long** — with `Label="Assigned to"` and an item text like
+  "Unassigned (Open)", the label rendered inline *over* the value instead of
+  floating above it, producing visible text like "Assigned to Open)". Fixed
+  by dropping the floating `Label` entirely and using a plain `MudText`
+  caption above the `MudSelect` instead — more predictable than fighting the
+  float-label CSS state for a one-way-bound select.
+- The generated `ShiftDto.Date` is `System.DateTimeOffset`, not `DateOnly`
+  (see the NSwag gotcha below) — `ShiftCalendar.razor.cs`'s `FindShift`
+  compares via `DateOnly.FromDateTime(s.Date.Date) == date`.
+- The 7-column grid overflows the viewport at narrower widths with no
+  scroll container currently wired up correctly (a wrapping
+  `overflow-x: auto` `div` didn't constrain it — likely needs a `min-width`
+  fix upstream in `BaseLayout`'s flex container). Known, deferred to
+  `CLAUDE_CARE.md`'s Phase 7 "mobile-responsive pass on the calendar view" —
+  don't spend time on it before then.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -116,6 +147,12 @@ this csproj/nswag.json pattern elsewhere:**
 Generated client methods take a leading `string? api_version` parameter (from
 `Asp.Versioning`'s URL substitution) — always pass `null` unless a specific
 version is required, e.g. `_tokensClient.GetTokenAsync(null, request)`.
+
+**`nswag.json`'s `dateType` is configured as `System.DateTimeOffset`** — any
+care-webapi `DateOnly` property or query parameter (first used in Phase 3's
+`ShiftDto.Date`/`weekStart`) generates as `DateTimeOffset` in the client, not
+`DateOnly`. Convert with `new DateTimeOffset(dateOnly.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)`
+going out and `DateOnly.FromDateTime(dto.Date.Date)` coming back.
 
 **A controller action returning a bare `Ok()`/`IActionResult` with no
 `[ProducesResponseType]` generates a `Task<FileResponse>` client method**,
@@ -172,6 +209,7 @@ place, silently serving the old baked-in URL.
 ## Roadmap
 
 See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold),
-Phase 1 (Auth & Users — invite/register/roles/forgot-password), and Phase 2
-(Documents — upload/replace/delete/version-history) are done. No shift
-calendar or notes UI yet.
+Phase 1 (Auth & Users — invite/register/roles/forgot-password), Phase 2
+(Documents — upload/replace/delete/version-history), and Phase 3 (Care
+Calendar Core — week-grid view, admin direct-assign) are done. No
+self-assign/replacement-request or notes UI yet.

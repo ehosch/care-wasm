@@ -1,0 +1,70 @@
+@page "/calendar"
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<PageTitle>Calendar</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Care Calendar</MudText>
+
+<MudToolBar Class="mb-2">
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" OnClick="PreviousWeekAsync" />
+    <MudText Class="mx-4">@WeekRangeLabel</MudText>
+    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" OnClick="NextWeekAsync" />
+    <MudSpacer />
+    <MudButton Size="Size.Small" OnClick="GoToThisWeekAsync">This week</MudButton>
+</MudToolBar>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <div style="overflow-x: auto;">
+        <MudSimpleTable Bordered="true" Dense="true">
+            <thead>
+                <tr>
+                    <th></th>
+                    @for (int i = 0; i < 7; i++)
+                    {
+                        var day = _weekStart.AddDays(i);
+                        <th>@day.ToString("ddd M/d")</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var shiftType in _shiftTypes)
+                {
+                    <tr>
+                        <td><b>@shiftType</b></td>
+                        @for (int i = 0; i < 7; i++)
+                        {
+                            var day = _weekStart.AddDays(i);
+                            var shift = FindShift(day, shiftType);
+                            <td>
+                                @if (shift is null)
+                                {
+                                    <MudText Typo="Typo.caption">—</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>@(shift.AssignedUserName ?? "Open")</MudText>
+                                    <AuthorizeView Roles="Admin" Context="authContext">
+                                        <Authorized>
+                                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
+                                                OnClick="@(() => OpenAssignDialog(shift))" />
+                                        </Authorized>
+                                    </AuthorizeView>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </MudSimpleTable>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+}
