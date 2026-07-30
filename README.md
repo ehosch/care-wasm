@@ -14,6 +14,14 @@ Early scaffold (Phase 0) — login and JWT auth are wired up, but the shift
 calendar, documents, and notes UI described in the backend's roadmap don't
 exist yet.
 
+## Quickstart (full stack)
+
+To run this together with the API and a MySQL instance in one step, see
+[`care-webapi`'s Quickstart](https://github.com/ehosch/care-webapi#quickstart-full-stack)
+— its `docker-compose.full.yml` pulls both published images. Continue below
+if you want to run just this frontend on its own (e.g. against an API you're
+already running elsewhere).
+
 ## Tech stack
 
 - **.NET 9** Blazor WebAssembly (ASP.NET Core hosted)
@@ -61,6 +69,14 @@ docker run -d -p 5011:8080 \
   -e API_BASE_URL=https://api.yourdomain.example/ \
   ghcr.io/ehosch/care-wasm:latest
 ```
+
+## Troubleshooting
+
+**`docker pull`/`docker compose pull` fails with `denied: denied` even though
+the image is public.** A stale `docker login ghcr.io` credential (e.g. an
+expired or insufficiently-scoped personal access token from an unrelated
+project) takes precedence over anonymous pull. Fix: `docker logout ghcr.io`,
+then retry.
 
 ## License
 
