@@ -1,0 +1,65 @@
+@page "/documents"
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<PageTitle>Documents</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Documents</MudText>
+
+<MudTable Items="@_documents" Loading="@_loading" Hover="true">
+    <ToolBarContent>
+        <MudSpacer />
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.UploadFile"
+                    OnClick="OpenUploadDialog">
+                    Upload
+                </MudButton>
+            </Authorized>
+        </AuthorizeView>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Title</MudTh>
+        <MudTh>Category</MudTh>
+        <MudTh>File</MudTh>
+        <MudTh>Size</MudTh>
+        <MudTh>Version</MudTh>
+        <MudTh>Uploaded by</MudTh>
+        <MudTh>Uploaded</MudTh>
+        <MudTh></MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Title">@context.Title</MudTd>
+        <MudTd DataLabel="Category">@context.Category</MudTd>
+        <MudTd DataLabel="File">@context.FileName</MudTd>
+        <MudTd DataLabel="Size">@FormatSize(context.FileSizeBytes)</MudTd>
+        <MudTd DataLabel="Version">@context.Version</MudTd>
+        <MudTd DataLabel="Uploaded by">@context.UploadedByName</MudTd>
+        <MudTd DataLabel="Uploaded">@context.UploadedAt.ToLocalTime().ToString("g")</MudTd>
+        <MudTd>
+            <MudTooltip Text="Download">
+                <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="@(() => DownloadAsync(context))" />
+            </MudTooltip>
+            @if (context.Version > 1)
+            {
+                <MudTooltip Text="Version history">
+                    <MudIconButton Icon="@Icons.Material.Filled.History" OnClick="@(() => OpenHistoryDialog(context))" />
+                </MudTooltip>
+            }
+            <AuthorizeView Roles="Admin" Context="authContext">
+                <Authorized>
+                    <MudTooltip Text="Replace">
+                        <MudIconButton Icon="@Icons.Material.Filled.FileUpload" OnClick="@(() => OpenReplaceDialog(context))" />
+                    </MudTooltip>
+                    <MudTooltip Text="Delete">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteAsync(context))" />
+                    </MudTooltip>
+                </Authorized>
+            </AuthorizeView>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+}

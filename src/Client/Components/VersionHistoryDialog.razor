@@ -1,0 +1,37 @@
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<MudDialog>
+    <DialogContent>
+        @if (_loading)
+        {
+            <MudProgressCircular Indeterminate="true" />
+        }
+        else if (_versions.Count == 0)
+        {
+            <MudText>No earlier versions.</MudText>
+        }
+        else
+        {
+            <MudList T="string">
+                @foreach (var version in _versions)
+                {
+                    <MudListItem T="string">
+                        <div class="d-flex align-center justify-space-between" style="width: 100%;">
+                            <div>
+                                <MudText Typo="Typo.body1">Version @version.Version — @version.FileName</MudText>
+                                <MudText Typo="Typo.caption">
+                                    @version.UploadedByName, @version.UploadedAt.ToLocalTime().ToString("g")
+                                </MudText>
+                            </div>
+                            <MudIconButton Icon="@Icons.Material.Filled.Download"
+                                OnClick="@(() => DownloadVersionAsync(version.Version))" />
+                        </div>
+                    </MudListItem>
+                }
+            </MudList>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>

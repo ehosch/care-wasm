@@ -1,0 +1,22 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+<MudDialog>
+    <DialogContent>
+        <MudText Class="mb-4">Upload a new version of "@Title".</MudText>
+        <MudFileUpload T="IBrowserFile" FilesChanged="OnFileSelected">
+            <ActivatorContent>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.AttachFile">
+                    @(_file is null ? "Choose file" : _file.Name)
+                </MudButton>
+            </ActivatorContent>
+        </MudFileUpload>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SubmitAsync">Replace</MudButton>
+    </DialogActions>
+</MudDialog>

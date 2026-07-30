@@ -10,11 +10,13 @@ client.
 
 ## Status
 
-Phase 0 (scaffold) and Phase 1 (Auth & Users) are done — login, a Users page
-(invite/resend/revoke/change role, Admin only), self-service registration
-from an invite link, and forgot/reset password all work. The shift calendar,
-documents, and notes UI described in the backend's roadmap don't exist yet.
-See `care-webapi`'s README for the default admin login used on first run.
+Phase 0 (scaffold), Phase 1 (Auth & Users), and Phase 2 (Documents) are done —
+login, a Users page (invite/resend/revoke/change role, Admin only),
+self-service registration from an invite link, forgot/reset password, and a
+Documents page (upload/replace/delete/version-history for Admins, view and
+download for everyone) all work. The shift calendar and notes UI described
+in the backend's roadmap don't exist yet. See `care-webapi`'s README for the
+default admin login used on first run.
 
 ## Quickstart (full stack)
 
@@ -27,7 +29,7 @@ already running elsewhere).
 ## Tech stack
 
 - **.NET 9** Blazor WebAssembly (ASP.NET Core hosted)
-- **MudBlazor 7** component library
+- **MudBlazor 7** component library, including file upload/download dialogs
 - **NSwag**-generated typed API client (`Client.Infrastructure/ApiClient/CareApi.cs`)
 - JWT auth via a custom `AuthenticationStateProvider`
 

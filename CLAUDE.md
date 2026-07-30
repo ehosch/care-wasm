@@ -33,6 +33,37 @@ one): `MudThemeProvider` → `MudPopoverProvider` → `MudDialogProvider` →
 needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
 (currently only `Login.razor`).
 
+## Phase 2 pages (Documents)
+
+- `Pages/Documents.razor` (`/documents`, `[Authorize]`, no role restriction —
+  every member can view/download) — `MudTable` listing title, category, file
+  name, size, version, uploader, upload date. Download and (if `Version > 1`)
+  Version History buttons are visible to everyone; Upload (toolbar) and
+  per-row Replace/Delete are wrapped in `<AuthorizeView Roles="Admin">`.
+- `Components/UploadDocumentDialog.razor`, `ReplaceDocumentDialog.razor`,
+  `VersionHistoryDialog.razor` — the latter lists `DocumentVersionDto` rows
+  each with their own download button, calling
+  `IDocumentsClient.DownloadVersionAsync`.
+- `Layout/NavMenu.razor` — "Documents" link is **not** wrapped in
+  `<AuthorizeView Roles="Admin">`, unlike "Users" — deliberate, every
+  authenticated member needs to reach it.
+- **File download reuses gatekeeper's JS interop Blob pattern** —
+  `downloadFileFromStream`/`triggerFileDownload` functions added to
+  `wwwroot/index.html` verbatim. A plain `<a href>` can't carry the JWT
+  bearer header, so the generated `FileResponse`'s stream is passed to
+  `IJSRuntime.InvokeVoidAsync` via `DotNetStreamReference` instead.
+- **`AuthorizeView`'s implicit `context` clashes with `MudTable`'s
+  `RowTemplate`** — both default to the parameter name `context`, and nesting
+  an `<AuthorizeView>` inside a `RowTemplate` (for the Replace/Delete buttons)
+  is a Razor compiler error (`RZ9999`) without disambiguation. Fixed with
+  `<AuthorizeView Roles="Admin" Context="authContext">` — any future
+  `AuthorizeView` nested inside a templated MudBlazor component needs the
+  same explicit `Context` attribute.
+- **`MudIconButton`'s `Title` attribute triggers analyzer warning `MUD0002`**
+  ("Illegal Attribute") in MudBlazor 7. Used `<MudTooltip Text="...">`
+  wrapping each icon button instead, to keep the 0-warnings bar this
+  codebase holds itself to.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -140,6 +171,7 @@ place, silently serving the old baked-in URL.
 
 ## Roadmap
 
-See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold) and
-Phase 1 (Auth & Users — invite/register/roles/forgot-password) are done. No
-shift calendar, documents, or notes UI yet.
+See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold),
+Phase 1 (Auth & Users — invite/register/roles/forgot-password), and Phase 2
+(Documents — upload/replace/delete/version-history) are done. No shift
+calendar or notes UI yet.
