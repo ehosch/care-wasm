@@ -1,0 +1,15 @@
+services:
+  wasm:
+    build:
+      context: .
+      dockerfile: src/Host/Dockerfile
+    container_name: care-wasm
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=8080
+      # Must match the public URL of the care-webapi container — rewritten into
+      # wwwroot/appsettings.json at container startup, no rebuild needed to change it.
+      - API_BASE_URL=${API_BASE_URL}
+    ports:
+      - "5011:8080"
+    restart: on-failure

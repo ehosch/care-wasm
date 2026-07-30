@@ -1,0 +1,32 @@
+@page "/login"
+@using Care.Wasm.Client.Infrastructure.ApiClient
+@attribute [AllowAnonymous]
+
+<div class="d-flex justify-center">
+    <MudText Typo="Typo.h4" GutterBottom="true">Sign In</MudText>
+</div>
+
+<EditForm Model="@_tokenRequest" OnValidSubmit="SubmitAsync">
+    <MudGrid>
+        <DataAnnotationsValidator />
+        <MudItem xs="12">
+            <MudTextField T="string" Label="Email" Variant="Variant.Outlined" @bind-Value="_tokenRequest.Email"
+                For="@(() => _tokenRequest.Email)" />
+        </MudItem>
+        <MudItem xs="12">
+            <MudTextField Label="Password" Variant="Variant.Outlined" @bind-Value="_tokenRequest.Password"
+                For="@(() => _tokenRequest.Password)" InputType="InputType.Password" />
+        </MudItem>
+        <MudItem xs="12" Class="d-flex justify-center">
+            <MudButton ButtonType="ButtonType.Submit" Disabled="_busySubmitting" Variant="Variant.Filled"
+                Color="Color.Primary" Size="Size.Large" StartIcon="@Icons.Material.Filled.Login" Style="width: 100%;">
+                Sign In
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+}

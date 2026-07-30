@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Client.Infrastructure/">
+    <Project Path="src/Client.Infrastructure/Care.Wasm.Client.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/src/Client/">
+    <Project Path="src/Client/Care.Wasm.Client.csproj" />
+  </Folder>
+  <Folder Name="/src/Host/">
+    <Project Path="src/Host/Care.Wasm.Host.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/Care.Wasm.Shared.csproj" />
+  </Folder>
+</Solution>

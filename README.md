@@ -1,0 +1,67 @@
+# Care Coordination — WASM
+
+A self-hosted Blazor WebAssembly frontend for the Care Coordination project —
+a single-tenant app for coordinating family/caregiver support for a patient.
+
+This is the frontend. The .NET 9 Web API backend lives in the companion
+[`care-webapi`](https://github.com/ehosch/care-webapi) repository — start
+that first, since this app talks to it exclusively via a typed NSwag-generated
+client.
+
+## Status
+
+Early scaffold (Phase 0) — login and JWT auth are wired up, but the shift
+calendar, documents, and notes UI described in the backend's roadmap don't
+exist yet.
+
+## Tech stack
+
+- **.NET 9** Blazor WebAssembly (ASP.NET Core hosted)
+- **MudBlazor 7** component library
+- **NSwag**-generated typed API client (`Client.Infrastructure/ApiClient/CareApi.cs`)
+- JWT auth via a custom `AuthenticationStateProvider`
+
+## Getting started
+
+### Local development
+
+1. Start `care-webapi` first (see its README).
+2. Update `src/Client/wwwroot/appsettings.Development.json`'s `ApiBaseUrl` to
+   match wherever the API is running.
+3. `dotnet run --project src/Host`
+
+### Regenerating the API client
+
+After changing anything in `care-webapi`, regenerate the typed client:
+
+```powershell
+./scripts/nswag-regen.ps1
+```
+
+This requires `care-webapi` to be running locally first. Hand-written client
+extensions belong in `CareApi.Extensions.cs` (a separate partial-class file)
+so they survive regeneration — never edit the generated `CareApi.cs` directly.
+
+### Docker
+
+```bash
+cp .env.example .env   # set API_BASE_URL to your care-webapi's public URL
+docker compose up -d --build
+```
+
+`API_BASE_URL` is rewritten into the published `wwwroot/appsettings.json` by
+a small entrypoint script (`src/Host/docker-entrypoint.sh`) each time the
+container **starts** — change it and restart the container, no rebuild
+needed. The app listens on host port `5011` by default.
+
+### Pre-built image
+
+```bash
+docker run -d -p 5011:8080 \
+  -e API_BASE_URL=https://api.yourdomain.example/ \
+  ghcr.io/ehosch/care-wasm:latest
+```
+
+## License
+
+[GNU General Public License v3.0](LICENSE).
