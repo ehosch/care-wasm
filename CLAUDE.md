@@ -509,6 +509,18 @@ and how to claim an open shift, shown once automatically.
   tab held their still-valid cached token, then confirming a refresh
   force-logged-out and cleared `localStorage`, while a normal
   still-valid session was unaffected.
+- **Each of the three `OnInitializedAsync` steps above (session check,
+  patient-name fetch, onboarding wizard) has its own isolated `try/catch (Exception)`**
+  — broader than just `ApiException`. Found via a real report: the
+  wizard worked for an Admin on a PC browser's first login but not for a
+  freshly-registered invitee on mobile. On a flakier mobile connection,
+  the `GetMeAsync` call above can throw something other than a clean
+  `ApiException` (a request timeout, a raw network error) if it never
+  gets an HTTP response at all — catching only `ApiException` let that
+  propagate uncaught and silently abort the rest of `OnInitializedAsync`,
+  so the onboarding check after it never ran. Don't narrow these back to
+  `ApiException`-only — the whole point is that no single step's failure
+  (of any kind) should ever block the independent steps after it.
 
 ## Auth
 

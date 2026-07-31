@@ -38,6 +38,9 @@
         // still unexpired will decode fine and look "logged in" client-side even if
         // the account it refers to no longer exists (e.g. the database was wiped and
         // reseeded). Confirm the account is still real before rendering as authenticated.
+        // Each step below is independently isolated with a broad catch — a flaky
+        // mobile connection throwing something other than a clean ApiException (a
+        // timeout, a network error) must never silently block the steps that follow.
         try
         {
             await UsersClient.GetMeAsync(null);
@@ -47,9 +50,9 @@
             await AuthService.LogoutAsync();
             return;
         }
-        catch (ApiException)
+        catch (Exception)
         {
-            // Some other transient/network error — not evidence the session itself is invalid.
+            // Any other failure isn't evidence the session itself is invalid.
         }
 
         try
@@ -57,18 +60,25 @@
             var settings = await SettingsClient.GetSettingsAsync(null);
             _patientName = settings.PatientName;
         }
-        catch (ApiException)
+        catch (Exception)
         {
             // Non-fatal — the app bar just won't show the patient name.
         }
 
-        if (await LocalStorage.GetItemAsync<bool?>("onboardingSeen") != true)
+        try
         {
-            // Set before showing, not after — however the dialog gets dismissed
-            // (button, Escape, backdrop click), it must never reappear.
-            await LocalStorage.SetItemAsync("onboardingSeen", true);
-            await DialogService.ShowAsync<OnboardingWizard>("Welcome",
-                new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+            if (await LocalStorage.GetItemAsync<bool?>("onboardingSeen") != true)
+            {
+                // Set before showing, not after — however the dialog gets dismissed
+                // (button, Escape, backdrop click), it must never reappear.
+                await LocalStorage.SetItemAsync("onboardingSeen", true);
+                await DialogService.ShowAsync<OnboardingWizard>("Welcome",
+                    new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+            }
+        }
+        catch (Exception)
+        {
+            // Don't let a storage/dialog hiccup break the rest of the page.
         }
     }
 
