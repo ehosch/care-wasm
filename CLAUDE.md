@@ -174,6 +174,18 @@ phone number:
   "Admin")]`, and (unlike role-changing) there's no "can't edit your own"
   restriction on phone numbers.
 
+## Invite via SMS
+
+`Components/InviteDialog.razor` gained a second, optional "Phone number
+(optional, sends the invite via text too)" `MudTextField` alongside Email,
+passed through as `CreateInviteRequest.PhoneNumber`. If left blank, the
+invite stays email-only (unchanged Phase 1 behavior) — the backend decides
+whether to also enqueue an SMS based on whether a phone number came
+through. No other frontend changes: the Users page's existing Phone
+column/edit dialog (Phase 6) already reflects the invite-time number
+immediately, since it's set on the `ApplicationUser` row the moment the
+invite is created, before the invitee ever registers.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only

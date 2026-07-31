@@ -3,6 +3,8 @@
 <MudDialog>
     <DialogContent>
         <MudTextField T="string" Label="Email" Variant="Variant.Outlined" @bind-Value="_email" />
+        <MudTextField T="string" Label="Phone number (optional, sends the invite via text too)" Variant="Variant.Outlined"
+            Class="mt-4" @bind-Value="_phoneNumber" />
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
             <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
@@ -22,6 +24,7 @@
     private IUsersClient UsersClient { get; set; } = default!;
 
     private string _email = string.Empty;
+    private string _phoneNumber = string.Empty;
     private bool _busy;
     private string? _errorMessage;
 
@@ -31,7 +34,8 @@
         _errorMessage = null;
         try
         {
-            await UsersClient.InviteAsync(null, new CreateInviteRequest { Email = _email });
+            string? phoneNumber = string.IsNullOrWhiteSpace(_phoneNumber) ? null : _phoneNumber;
+            await UsersClient.InviteAsync(null, new CreateInviteRequest { Email = _email, PhoneNumber = phoneNumber });
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch (ApiException ex)
