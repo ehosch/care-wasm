@@ -166,7 +166,7 @@ public partial class ShiftCalendar
         string borderBottom = info.IsLastHour ? "1px solid #9e9e9e" : "none";
 
         return $"background-color:{background};border-left:1px solid #dddddd;border-right:1px solid #dddddd;" +
-               $"border-top:{borderTop};border-bottom:{borderBottom};height:22px;vertical-align:top;" +
+               $"border-top:{borderTop};border-bottom:{borderBottom};height:22px;min-width:72px;vertical-align:top;" +
                $"cursor:{(clickable ? "pointer" : "default")};";
     }
 

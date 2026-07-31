@@ -16,33 +16,37 @@
 @if (_pendingStart is not null && _pendingEnd is not null)
 {
     <MudPaper Class="pa-3 mb-2" Elevation="2">
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-            <MudText>@FormatRange(_pendingStart.Value, _pendingEnd.Value)</MudText>
+        <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
+            <MudText style="white-space:nowrap;">@FormatRange(_pendingStart.Value, _pendingEnd.Value)</MudText>
             @if (_isCreating)
             {
-                <MudText Typo="Typo.caption">Assign to</MudText>
                 @if (_isAdmin)
                 {
-                    <MudSelect T="string" Value="@_createAssignedUserId" ValueChanged="@((string id) => _createAssignedUserId = id)"
-                        Dense="true" Style="max-width: 220px;">
-                        @foreach (var user in _activeUsers)
-                        {
-                            <MudSelectItem Value="@user.Id">@(user.Id == _currentUserId ? "Me" : user.Name)</MudSelectItem>
-                        }
-                    </MudSelect>
+                    <div style="display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                        <MudText Typo="Typo.caption">Assign to</MudText>
+                        <MudSelect T="string" Value="@_createAssignedUserId" ValueChanged="@((string id) => _createAssignedUserId = id)"
+                            Dense="true" Style="max-width: 220px;">
+                            @foreach (var user in _activeUsers)
+                            {
+                                <MudSelectItem Value="@user.Id">@(user.Id == _currentUserId ? "Me" : user.Name)</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </div>
                 }
                 else
                 {
-                    <MudText>Me</MudText>
+                    <MudText style="white-space:nowrap;">Claiming this for yourself</MudText>
                 }
             }
-            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
-            @if (!_isCreating && _isAdmin)
-            {
-                <MudButton Color="Color.Error" Disabled="_busy" OnClick="DeleteAsync">Delete</MudButton>
-            }
-            <MudButton Disabled="_busy" OnClick="ClearPending">Cancel</MudButton>
-        </MudStack>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
+                @if (!_isCreating && _isAdmin)
+                {
+                    <MudButton Color="Color.Error" Disabled="_busy" OnClick="DeleteAsync">Delete</MudButton>
+                }
+                <MudButton Disabled="_busy" OnClick="ClearPending">Cancel</MudButton>
+            </div>
+        </div>
     </MudPaper>
 }
 
@@ -60,7 +64,7 @@ else
                     @for (int i = 0; i < 7; i++)
                     {
                         var day = _weekStart.AddDays(i);
-                        <th>@day.ToString("ddd M/d")</th>
+                        <th style="min-width: 72px;">@day.ToString("ddd M/d")</th>
                     }
                 </tr>
             </thead>

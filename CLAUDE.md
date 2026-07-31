@@ -325,6 +325,22 @@ Four independent fixes from live testing after Phase 9 shipped.
   tt")` formatting pattern already used in `ShiftCalendar.razor.cs`.
 - NSwag regen needed for `ISettingsClient`/`AppSettingsDto`/
   `UpdateSettingsRequest`/the reshaped `ReplacementRequestDto`.
+- **Mobile follow-up on the grid's action bar and column widths** — the
+  original single-row `MudStack Row` layout wrapped mid-phrase on narrow
+  viewports ("Assign" / "to Me [Save]"). Replaced with a plain CSS
+  `display:flex; flex-wrap:wrap` container where each logical group (date
+  range, assignee info, button row) is its own `white-space:nowrap` chunk,
+  so wrapping happens between groups, not inside them. Non-admins now see
+  a plain "Claiming this for yourself" statement instead of "Assign to:
+  Me" — the latter implied a choice that doesn't actually exist for them.
+  Day columns got an explicit `min-width: 72px` (both the `<th>` and
+  `CellStyle`'s per-`<td>` style) so adjacent-cell taps during resize land
+  reliably on mobile — previously column width was whatever the browser's
+  table layout organically produced from cell content, which could be
+  uncomfortably narrow. Verified with the same same-origin `<iframe>`
+  narrow-viewport technique documented in the Phase 7 gotcha above (this
+  environment's `resize_window` tool doesn't actually shrink the real
+  Chrome window).
 
 ## Auth
 
