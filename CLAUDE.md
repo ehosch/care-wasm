@@ -317,6 +317,11 @@ Four independent fixes from live testing after Phase 9 shipped.
   `.razor.cs` fetches it on init and shows "Coordinating care for
   {PatientName}" only when set (`catch (ApiException)` around the fetch is
   non-fatal — the page just doesn't show the line rather than breaking).
+  **`Layout/MainLayout.razor`'s app bar title also fetches it** (same
+  fetch-on-init + non-fatal-catch pattern) and appends "· {PatientName}" —
+  the first pass only put this on the Home page body, but "main interface"
+  turned out to mean the persistent title bar visible on every page, not
+  just Home's own content.
 - **`Pages/ReplacementQueue.razor`** now shows the shift's formatted time
   range alongside the date — `ReplacementRequestDto.StartTime`/`EndTime`
   were entirely missing after Phase 9 dropped `ShiftType` (not just the
