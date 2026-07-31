@@ -21,6 +21,7 @@ public partial class Account
     private string? _emailError;
 
     private string _phoneNumber = string.Empty;
+    private bool _smsConsent;
     private bool _phoneBusy;
     private bool _phoneSaved;
     private string? _phoneError;
@@ -72,9 +73,16 @@ public partial class Account
 
     private async Task SavePhoneAsync()
     {
-        _phoneBusy = true;
         _phoneSaved = false;
         _phoneError = null;
+
+        if (!string.IsNullOrWhiteSpace(_phoneNumber) && !_smsConsent)
+        {
+            _phoneError = "Please check the box to consent to SMS notifications, or clear the phone number field.";
+            return;
+        }
+
+        _phoneBusy = true;
         try
         {
             await UsersClient.UpdateMyPhoneNumberAsync(null, new UpdatePhoneNumberRequest

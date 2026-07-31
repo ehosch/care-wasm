@@ -18,6 +18,7 @@ public partial class Register
     private readonly RegisterRequest _model = new();
     private string? _token;
     private string _confirmPassword = string.Empty;
+    private bool _smsConsent;
     private bool _busy;
     private string? _errorMessage;
 
@@ -33,6 +34,12 @@ public partial class Register
         if (_model.Password != _confirmPassword)
         {
             _errorMessage = "Passwords don't match.";
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_model.PhoneNumber) && !_smsConsent)
+        {
+            _errorMessage = "Please check the box to consent to SMS notifications, or leave the phone number blank.";
             return;
         }
 

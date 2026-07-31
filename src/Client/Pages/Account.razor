@@ -37,6 +37,13 @@ else
         <MudText Typo="Typo.h6" Class="mb-2">Phone number</MudText>
         <MudTextField T="string" @bind-Value="_phoneNumber" Label="Phone number" Variant="Variant.Outlined"
             Margin="Margin.Dense" Style="max-width:400px;" />
+        <MudCheckBox T="bool" @bind-Value="_smsConsent" Color="Color.Primary" Class="mt-2">
+            Yes, I'd like to receive automated SMS notifications about my caregiving shifts (shift
+            assignments, replacement requests, document uploads) from Care Coordination. Message
+            frequency varies with shift activity. Message and data rates may apply. Reply HELP for
+            help, STOP to cancel at any time. <MudLink Href="/terms" Target="_blank">Terms</MudLink>
+            &middot; <MudLink Href="/privacy" Target="_blank">Privacy Policy</MudLink>.
+        </MudCheckBox>
         <div class="mt-2">
             <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_phoneBusy" OnClick="SavePhoneAsync">Save</MudButton>
         </div>

@@ -383,6 +383,38 @@ Four independent fixes from live testing after Phase 9 shipped.
   `RequestEmailChangeAsync`/`ConfirmEmailChangeAsync` and their request
   DTOs.
 
+## Twilio A2P 10DLC campaign registration
+
+Registering the app's Twilio number for SMS sending requires a real,
+publicly reachable privacy policy and — per Twilio's own stated web-form
+opt-in requirements (unchecked consent checkbox, message-frequency/rate
+disclaimers, HELP/STOP instructions, links to Terms and Privacy) — an
+actual compliant opt-in UI wherever a phone number is collected, not just
+a plain text field.
+
+- **New `Pages/Privacy.razor`/`Pages/Terms.razor`** (`/privacy`, `/terms`,
+  both `[AllowAnonymous]`) — plain static pages describing what this app
+  collects/how it's used and basic usage terms, scoped to this app's
+  actual private, invite-only, self-hosted usage (not templated
+  boilerplate for a commercial product). These are the URLs supplied to
+  Twilio's campaign registration form.
+- **`Pages/Register.razor` and `Pages/Account.razor`'s phone-number
+  fields both gained an unchecked-by-default `MudCheckBox`** with the
+  message-type/frequency/rate disclosure text and `Terms`/`Privacy` links
+  inline, matching Twilio's example web-form screenshot field-for-field.
+  Submitting with a non-blank phone number but an unchecked box is
+  rejected client-side with a friendly error — same
+  `ApiErrorHelper`-style inline `MudAlert`, no server round-trip needed
+  since this is pure UI validation, not something the API needs to
+  enforce.
+- **The consent checkbox always starts unchecked, even when a phone
+  number is already saved** (`Account.razor`) — deliberate, not a bug:
+  re-checking it is a small amount of friction on every settings-page
+  visit, but it avoids ambiguity about whether "pre-checked because you
+  already consented once" would satisfy Twilio's literal "must NOT be
+  pre-selected" requirement. Don't default it to `true` based on the
+  loaded phone number.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
