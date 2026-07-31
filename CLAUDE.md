@@ -749,6 +749,9 @@ Phase 14 added a version number in the nav menu as a deploy-verification
 marker, bumped on every push per the policy in "Versioning" above.
 Phase 15 added per-trigger email/SMS notification toggles, a new
 "shift starts in about an hour" reminder alert, and a light/dark mode
-toggle next to Logout. Only the actual homelab deployment of this latest
-work remains — an operational step on the user's own infrastructure, not
-a code change tracked here.
+toggle next to Logout (plus a same-phase follow-up fixing the Calendar
+page's hardcoded colors for dark mode). All of the above is deployed and
+confirmed working in production as of 2026-07-31. SMS sending itself is
+still pending Twilio's A2P 10DLC campaign approval — the phone-only-invite
+and notification code paths are fully built and shipped, they just won't
+actually deliver texts until that approval comes through.
