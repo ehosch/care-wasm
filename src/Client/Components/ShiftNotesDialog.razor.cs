@@ -33,7 +33,7 @@ public partial class ShiftNotesDialog
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {
@@ -59,7 +59,7 @@ public partial class ShiftNotesDialog
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {

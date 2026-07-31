@@ -45,7 +45,7 @@ public partial class Register
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {

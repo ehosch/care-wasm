@@ -43,7 +43,7 @@ public partial class UploadDocumentDialog
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {

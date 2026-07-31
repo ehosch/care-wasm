@@ -186,6 +186,76 @@ column/edit dialog (Phase 6) already reflects the invite-time number
 immediately, since it's set on the `ApplicationUser` row the moment the
 invite is created, before the invitee ever registers.
 
+## Friendly error messages
+
+`Client.Infrastructure/ApiClient/ApiErrorHelper.cs` (hand-written, lives
+alongside the generated client so it survives NSwag regen) parses
+`ApiException.Response` as JSON and handles both error shapes care-webapi
+actually produces: ASP.NET Core's built-in `{"errors": {"Field": ["msg"]}}`
+(model validation) and this app's own `ExceptionMiddleware` shape
+`{"statusCode":N,"message":"..."}` — falling back to a generic "Something
+went wrong" if neither parses. Every `catch (ApiException ex)` block across
+the app calls `ApiErrorHelper.GetFriendlyMessage(ex)` instead of
+`ex.Message` (which, unfixed, would show the raw JSON body plus a
+`traceId` — `ex.Message` is literally `message + "\n\nStatus:
+...\nResponse: \n" + rawJsonBody` in the NSwag-generated `ApiException`).
+`Login.razor.cs` catches the broader `Exception`, not `ApiException` (a
+fallback for network errors, since `AuthService.LoginAsync` already
+returns `false` for a bad password) — `ApiErrorHelper` has a second
+`GetFriendlyMessage(Exception)` overload for that call site.
+
+## Calendar color coding, times, and adjustable shift boundaries
+
+- `Pages/ShiftCalendar.razor`/`.razor.cs` — each cell's background now
+  reflects `ShiftDto.Status` (`CellBackgroundColor`: Open = light gray,
+  Assigned = light green, ReplacementRequested = light amber, inline
+  `style`, not a MudBlazor color prop, since this is a cell background not
+  a themed component) and shows the shift's formatted `StartTime`–`EndTime`
+  range under the assignee/"Open" text. When `ShiftDto.GapAfterMinutes` is
+  non-null, a small warning caption appears ("⚠ N-min gap before next
+  shift").
+- **The Admin edit icon and the assigned-member edit icon are two separate
+  conditionally-rendered `MudIconButton`s, not one shared check** — the
+  `<AuthorizeView Roles="Admin">`-wrapped icon (Phase 3) is unchanged and
+  always available to Admins regardless of assignment; a second icon
+  (gated by `CanAdjustTimes(shift)`, which is deliberately `!_isAdmin &&
+  shift.AssignedUserId == _currentUserId`) additionally lets the assigned
+  non-admin member reach the same dialog for their own shift. The
+  `!_isAdmin` guard avoids rendering both icons side-by-side for an Admin
+  who happens to also be the assignee.
+- `Components/AssignShiftDialog.razor`/`.razor.cs` — gained two
+  `MudSlider<int>` (minutes-since-midnight, `Min="0" Max="1439" Step="15"`)
+  for start/end time, defaulting to the shift's **current** times (passed
+  in as new `CurrentStartTime`/`CurrentEndTime` parameters from
+  `ShiftCalendar.razor.cs`), not the shift-template default — adjustments
+  compound on top of any prior adjustment. The dialog now injects
+  `AuthenticationStateProvider` itself (rather than taking an `IsAdmin`
+  parameter) to decide whether the assignee `MudSelect` is interactive
+  (`Disabled="!_isAdmin"` — visible to everyone, but only an Admin can
+  actually reassign) and whether `Save` calls `AssignAsync` at all (a
+  non-admin assigned member's Save only calls `AdjustTimesAsync`, since
+  the assign endpoint is Admin-only server-side anyway).
+  - **`MudSelect`'s closed-state display can render the raw bound value
+    (a GUID string) instead of the matching `MudSelectItem`'s label on
+    first paint**, until the user interacts with it (open/close the
+    dropdown) or any re-render occurs after `_activeUsers` finishes
+    loading — cosmetic only, the underlying `Value`/selection is correct
+    the whole time. Not fixed (pre-existing `MudSelect` behavior from
+    Phase 3's Value/ValueChanged pattern, not something Phase 8 introduced
+    or was asked to address) — worth knowing if a future screenshot looks
+    wrong immediately after a dialog opens.
+  - **Save on 409 (`ApiException.StatusCode == 409`) shows the server's
+    conflict message (gap length + neighbor shift, via
+    `ApiErrorHelper.GetFriendlyMessage`) in a warning alert with a
+    "Continue anyway" button**, instead of a dead-end error — clicking it
+    resubmits the same `AdjustTimesAsync` call with `ConfirmGap: true`.
+    This is the one dialog in the app where a 409 is a normal, expected
+    step in the flow rather than a terminal failure.
+- NSwag regen workaround used here (documented below) picks up
+  `AdjustShiftTimesRequest`/`IShiftsClient.AdjustTimesAsync` and
+  `ShiftDto.GapAfterMinutes` automatically — no manual edits to
+  `CareApi.cs` needed for this feature.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -300,6 +370,9 @@ place, silently serving the old baked-in URL.
 ## Roadmap
 
 See `../CLAUDE_CARE.md` for the full phased plan. Every phase is done,
-including Phase 7's mobile-responsive calendar fix. Only the actual
-homelab deployment remains — an operational step on the user's own
+including Phase 7's mobile-responsive calendar fix. Phase 8 (post-go-live,
+driven by real production use) added friendly validation error messages
+and calendar color-coding/time-display/gap-indicator/adjustable-time
+sliders — see the sections above. Only the actual homelab deployment of
+this latest work remains — an operational step on the user's own
 infrastructure, not a code change tracked here.

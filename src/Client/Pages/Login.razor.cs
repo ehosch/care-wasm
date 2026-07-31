@@ -34,7 +34,7 @@ public partial class Login
         }
         catch (Exception ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {

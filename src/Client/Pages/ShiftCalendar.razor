@@ -40,7 +40,7 @@ else
                         {
                             var day = _weekStart.AddDays(i);
                             var shift = FindShift(day, shiftType);
-                            <td>
+                            <td style="@(shift is null ? null : $"background-color:{CellBackgroundColor(shift)};")">
                                 @if (shift is null)
                                 {
                                     <MudText Typo="Typo.caption">—</MudText>
@@ -48,6 +48,7 @@ else
                                 else
                                 {
                                     <MudText>@(shift.AssignedUserName ?? "Open")</MudText>
+                                    <MudText Typo="Typo.caption">@FormatTimeRange(shift)</MudText>
                                     @if (shift.Status == ShiftStatus.Open)
                                     {
                                         <MudButton Size="Size.Small" OnClick="@(() => ClaimAsync(shift))">Claim</MudButton>
@@ -70,11 +71,20 @@ else
                                                 OnClick="@(() => OpenAssignDialog(shift))" />
                                         </Authorized>
                                     </AuthorizeView>
+                                    @if (CanAdjustTimes(shift))
+                                    {
+                                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
+                                            OnClick="@(() => OpenAssignDialog(shift))" />
+                                    }
                                     <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Comment"
                                         OnClick="@(() => OpenNotesDialog(shift))" />
                                     @if (shift.NoteCount > 0)
                                     {
                                         <MudText Typo="Typo.caption">@shift.NoteCount</MudText>
+                                    }
+                                    @if (shift.GapAfterMinutes is { } gapMinutes)
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Warning">⚠ @gapMinutes-min gap before next shift</MudText>
                                     }
                                 }
                             </td>

@@ -5,13 +5,26 @@
         <MudText Class="mb-2">@ShiftLabel</MudText>
         <MudText Typo="Typo.caption" Class="mb-1">Assigned to</MudText>
         <MudSelect T="string" Value="@_selectedUserId" ValueChanged="@((string id) => _selectedUserId = id)"
-            Variant="Variant.Outlined" Margin="Margin.Dense">
+            Variant="Variant.Outlined" Margin="Margin.Dense" Disabled="!_isAdmin">
             <MudSelectItem Value="@string.Empty">Open (unassigned)</MudSelectItem>
             @foreach (var user in _activeUsers)
             {
                 <MudSelectItem Value="@user.Id">@user.Name</MudSelectItem>
             }
         </MudSelect>
+
+        <MudText Typo="Typo.caption" Class="mt-4 mb-1">Start time: @FormatMinutes(_startMinutes)</MudText>
+        <MudSlider T="int" Value="_startMinutes" ValueChanged="@((int m) => _startMinutes = m)"
+            Min="0" Max="1439" Step="15" />
+
+        <MudText Typo="Typo.caption" Class="mt-4 mb-1">End time: @FormatMinutes(_endMinutes)</MudText>
+        <MudSlider T="int" Value="_endMinutes" ValueChanged="@((int m) => _endMinutes = m)"
+            Min="0" Max="1439" Step="15" />
+
+        @if (!string.IsNullOrEmpty(_conflictMessage))
+        {
+            <MudAlert Severity="Severity.Warning" Class="mt-4">@_conflictMessage</MudAlert>
+        }
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
             <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
@@ -19,6 +32,13 @@
     </DialogContent>
     <DialogActions>
         <MudButton OnClick="Cancel">Cancel</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SubmitAsync">Save</MudButton>
+        @if (!string.IsNullOrEmpty(_conflictMessage))
+        {
+            <MudButton Color="Color.Warning" Variant="Variant.Filled" Disabled="_busy" OnClick="ConfirmGapAsync">Continue anyway</MudButton>
+        }
+        else
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SubmitAsync">Save</MudButton>
+        }
     </DialogActions>
 </MudDialog>

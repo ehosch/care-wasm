@@ -47,7 +47,7 @@ public partial class ReplaceDocumentDialog
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {

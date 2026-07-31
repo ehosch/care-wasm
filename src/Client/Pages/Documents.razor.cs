@@ -32,7 +32,7 @@ public partial class Documents
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {
@@ -84,7 +84,7 @@ public partial class Documents
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
     }
 
@@ -97,7 +97,7 @@ public partial class Documents
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
     }
 

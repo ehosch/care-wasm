@@ -28,6 +28,7 @@ public partial class ShiftCalendar
     private bool _loading = true;
     private string? _errorMessage;
     private string? _currentUserId;
+    private bool _isAdmin;
 
     private string WeekRangeLabel =>
         $"{_weekStart:MMM d} – {_weekStart.AddDays(6):MMM d, yyyy}";
@@ -36,6 +37,7 @@ public partial class ShiftCalendar
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _isAdmin = authState.User.IsInRole("Admin");
 
         _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
         await LoadShiftsAsync();
@@ -52,7 +54,7 @@ public partial class ShiftCalendar
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
         finally
         {
@@ -81,13 +83,32 @@ public partial class ShiftCalendar
     private ShiftDto? FindShift(DateOnly date, ShiftType shiftType) =>
         _shifts.FirstOrDefault(s => DateOnly.FromDateTime(s.Date.Date) == date && s.ShiftType == shiftType);
 
+    private static string CellBackgroundColor(ShiftDto shift) => shift.Status switch
+    {
+        ShiftStatus.Open => "#f5f5f5",
+        ShiftStatus.Assigned => "#e8f5e9",
+        ShiftStatus.ReplacementRequested => "#fff8e1",
+        _ => "transparent",
+    };
+
+    private static string FormatTimeRange(ShiftDto shift) =>
+        $"{FormatTime(shift.StartTime)}–{FormatTime(shift.EndTime)}";
+
+    private static string FormatTime(TimeSpan time) =>
+        DateTime.Today.Add(time).ToString("h:mm tt");
+
+    private bool CanAdjustTimes(ShiftDto shift) =>
+        !_isAdmin && shift.AssignedUserId == _currentUserId;
+
     private async Task OpenAssignDialog(ShiftDto shift)
     {
         var parameters = new DialogParameters<AssignShiftDialog>
         {
             { d => d.ShiftId, shift.Id },
             { d => d.ShiftLabel, $"{shift.ShiftType} — {shift.Date:ddd, MMM d}" },
-            { d => d.CurrentAssignedUserId, shift.AssignedUserId }
+            { d => d.CurrentAssignedUserId, shift.AssignedUserId },
+            { d => d.CurrentStartTime, shift.StartTime },
+            { d => d.CurrentEndTime, shift.EndTime }
         };
         var result = await DialogService.ShowAsync<AssignShiftDialog>("Assign shift", parameters);
         var dialogResult = await result.Result;
@@ -106,7 +127,7 @@ public partial class ShiftCalendar
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
     }
 
@@ -139,7 +160,7 @@ public partial class ShiftCalendar
         }
         catch (ApiException ex)
         {
-            _errorMessage = ex.Message;
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
     }
 
