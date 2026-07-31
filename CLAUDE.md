@@ -284,6 +284,18 @@ of them.
   `SwapHoriz`-icon button in a shift's cell), calling
   `IShiftsClient.AssignAsync`. No more sliders, no more `AdjustTimesAsync`
   call in this dialog — time editing lives entirely in the grid now.
+  **This `MudSelect` initially showed the raw assigned-user GUID instead
+  of their name** — a known MudBlazor quirk where a one-way-bound
+  `MudSelect`'s displayed text for the initial `Value` doesn't resolve
+  correctly if its `MudSelectItem` options only become available in the
+  same render pass the value is first set (i.e. `_activeUsers` and
+  `_selectedUserId` both populate together after the same
+  `OnInitializedAsync` await); it self-corrects the moment the user
+  interacts with the dropdown, which is what made it easy to miss.
+  Fixed by not rendering the `MudSelect` at all (an `@if
+  (_activeUsers.Count == 0)` spinner guard) until the user list has
+  actually loaded — the same fix pattern to reach for if a future
+  one-way-bound `MudSelect` with async-loaded items shows this again.
 - **The old `ClaimAsync`/"Claim" button is gone** — claiming previously-
   uncovered time is just clicking the uncovered cell(s) and saving with
   yourself as the assignee, same unified flow as any other creation.

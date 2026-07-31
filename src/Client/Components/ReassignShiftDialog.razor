@@ -4,13 +4,20 @@
     <DialogContent>
         <MudText Class="mb-2">@ShiftLabel</MudText>
         <MudText Typo="Typo.caption" Class="mb-1">Assigned to</MudText>
-        <MudSelect T="string" Value="@_selectedUserId" ValueChanged="@((string id) => _selectedUserId = id)"
-            Variant="Variant.Outlined" Margin="Margin.Dense">
-            @foreach (var user in _activeUsers)
-            {
-                <MudSelectItem Value="@user.Id">@user.Name</MudSelectItem>
-            }
-        </MudSelect>
+        @if (_activeUsers.Count == 0)
+        {
+            <MudProgressCircular Indeterminate="true" Size="Size.Small" />
+        }
+        else
+        {
+            <MudSelect T="string" Value="@_selectedUserId" ValueChanged="@((string id) => _selectedUserId = id)"
+                Variant="Variant.Outlined" Margin="Margin.Dense">
+                @foreach (var user in _activeUsers)
+                {
+                    <MudSelectItem Value="@user.Id">@user.Name</MudSelectItem>
+                }
+            </MudSelect>
+        }
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
             <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
