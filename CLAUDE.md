@@ -294,6 +294,38 @@ of them.
   future changes to the shift endpoints will need the same regen
   workaround documented below.
 
+## Phase 10 — document preview, patient settings, replacement-queue times
+
+Four independent fixes from live testing after Phase 9 shipped.
+
+- **`wwwroot/index.html` gained `viewFileFromStream(contentType,
+  contentStreamReference)`**, alongside the existing
+  `downloadFileFromStream` — builds the `Blob` **with the correct MIME
+  type** (`downloadFileFromStream` deliberately doesn't bother, since a
+  forced download doesn't care) and does `window.open(url, '_blank')`
+  with **no** `download` attribute, which is what lets the browser's
+  native PDF/image viewer take over instead of downloading. Revokes the
+  object URL on a `setTimeout` rather than immediately, since the new tab
+  needs time to actually load the blob URL first.
+- **`Pages/Documents.razor.cs`'s `CanPreview(DocumentDto)`** gates a new
+  "View" icon button on `ContentType` starting with `application/pdf` or
+  `image/` — Download stays for every file type regardless; View is
+  additive, not a replacement.
+- **New `Pages/Settings.razor`/`.razor.cs`** (`/settings`,
+  `[Authorize(Roles = "Admin")]`, same attribute pattern as `Users.razor`)
+  — a single `PatientName` field, no generic settings framework. `Home.razor`/
+  `.razor.cs` fetches it on init and shows "Coordinating care for
+  {PatientName}" only when set (`catch (ApiException)` around the fetch is
+  non-fatal — the page just doesn't show the line rather than breaking).
+- **`Pages/ReplacementQueue.razor`** now shows the shift's formatted time
+  range alongside the date — `ReplacementRequestDto.StartTime`/`EndTime`
+  were entirely missing after Phase 9 dropped `ShiftType` (not just the
+  type, the times went with it), leaving no indication of how long the
+  shift actually is. Reuses the same `DateTime.Today.Add(time).ToString("h:mm
+  tt")` formatting pattern already used in `ShiftCalendar.razor.cs`.
+- NSwag regen needed for `ISettingsClient`/`AppSettingsDto`/
+  `UpdateSettingsRequest`/the reshaped `ReplacementRequestDto`.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -412,6 +444,10 @@ including Phase 7's mobile-responsive calendar fix. Phase 8 (post-go-live,
 driven by real production use) added friendly validation error messages;
 its slider-based calendar UI was then fully replaced by Phase 9's
 blockless 24-hour grid (no more fixed shift types — see the "Phase 9"
-section above for the current model). Only the actual homelab deployment
-of this latest work remains — an operational step on the user's own
-infrastructure, not a code change tracked here.
+section above for the current model). Phase 10 added inline PDF/image
+preview on the Documents page, an Admin-editable patient name (Settings
+page + Home page display + invitation emails/texts), a link on the
+replacement-requested notification, and shift times on the Replacement
+Requests page. Only the actual homelab deployment of this latest work
+remains — an operational step on the user's own infrastructure, not a
+code change tracked here.

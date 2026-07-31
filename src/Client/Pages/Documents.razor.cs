@@ -88,6 +88,24 @@ public partial class Documents
         }
     }
 
+    private static bool CanPreview(DocumentDto document) =>
+        document.ContentType.StartsWith("application/pdf", StringComparison.OrdinalIgnoreCase) ||
+        document.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+
+    private async Task ViewAsync(DocumentDto document)
+    {
+        try
+        {
+            var response = await DocumentsClient.DownloadAsync(document.Id, null);
+            using var streamRef = new DotNetStreamReference(response.Stream, leaveOpen: false);
+            await JsRuntime.InvokeVoidAsync("viewFileFromStream", document.ContentType, streamRef);
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
+        }
+    }
+
     private async Task DeleteAsync(DocumentDto document)
     {
         try

@@ -45,6 +45,16 @@
             anchorElement.click();
             anchorElement.remove();
         }
+
+        async function viewFileFromStream(contentType, contentStreamReference) {
+            const arrayBuffer = await contentStreamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer], { type: contentType });
+            const url = URL.createObjectURL(blob);
+
+            window.open(url, '_blank');
+
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }
     </script>
 </body>
 

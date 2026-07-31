@@ -67,4 +67,9 @@ public partial class ReplacementQueue
             _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
         }
     }
+
+    private static string FormatTimeRange(ReplacementRequestDto request) =>
+        $"{FormatTime(request.StartTime)}–{FormatTime(request.EndTime)}";
+
+    private static string FormatTime(TimeSpan time) => DateTime.Today.Add(time).ToString("h:mm tt");
 }

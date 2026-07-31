@@ -36,6 +36,12 @@
         <MudTd DataLabel="Uploaded by">@context.UploadedByName</MudTd>
         <MudTd DataLabel="Uploaded">@context.UploadedAt.ToLocalTime().ToString("g")</MudTd>
         <MudTd>
+            @if (CanPreview(context))
+            {
+                <MudTooltip Text="View">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility" OnClick="@(() => ViewAsync(context))" />
+                </MudTooltip>
+            }
             <MudTooltip Text="Download">
                 <MudIconButton Icon="@Icons.Material.Filled.Download" OnClick="@(() => DownloadAsync(context))" />
             </MudTooltip>

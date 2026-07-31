@@ -1,6 +1,11 @@
 @page "/"
+@using Care.Wasm.Client.Infrastructure.ApiClient
 
 <PageTitle>Home</PageTitle>
 
 <MudText Typo="Typo.h4">Care Coordination</MudText>
+@if (!string.IsNullOrWhiteSpace(_patientName))
+{
+    <MudText Typo="Typo.subtitle1" Class="mb-2">Coordinating care for @_patientName</MudText>
+}
 <MudText>Check the Calendar to view or claim upcoming shifts and add notes, browse Documents, or handle open Replacement Requests.</MudText>

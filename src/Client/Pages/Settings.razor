@@ -1,0 +1,33 @@
+@page "/settings"
+@attribute [Authorize(Roles = "Admin")]
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<PageTitle>Settings</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Settings</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudText Typo="Typo.caption" Class="mb-1">Patient name</MudText>
+    <MudTextField T="string" @bind-Value="_patientName" Variant="Variant.Outlined" Margin="Margin.Dense"
+        Placeholder="e.g. Grandma Jane" Style="max-width: 400px;" />
+    <MudText Typo="Typo.caption" Class="mt-1 mb-4" Style="opacity: 0.7;">
+        Shown on the Home page and in invitation emails/texts. Leave blank to hide it.
+    </MudText>
+
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
+
+    @if (_saved)
+    {
+        <MudText Color="Color.Success" Class="ml-4" Style="display:inline-block;">Saved.</MudText>
+    }
+}
+
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+}

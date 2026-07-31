@@ -15,18 +15,23 @@ Users page (invite/resend/revoke/change role, phone number, Admin only),
 self-service registration from an invite link (optionally with a phone
 number for SMS), forgot/reset password, a Documents page
 (upload/replace/delete/version-history for Admins, view and download for
-everyone), a Calendar page (a 24-hour-block grid per day, no fixed shift
+everyone, with inline preview instead of a forced download for PDFs and
+images), a Calendar page (a 24-hour-block grid per day, no fixed shift
 types — click an uncovered stretch to claim or assign it, click an
 existing shift to resize or delete it, growing into a neighbor
 shrinks/absorbs it and shrinking away lets a neighbor reclaim the time, a
-per-shift note thread and replacement-request actions), and a Replacement
-Requests page (open-queue view, claim, cancel-your-own) all work.
-Validation and other API errors show as a plain, friendly message rather
-than raw JSON. Email/SMS notifications fire automatically from the
-backend for shift-assigned/replacement-requested/replacement-claimed/
-shift-removed/shift-time-changed/document-uploaded events — there's no
-dedicated frontend page for this, it's backend-only dispatch. See
-`care-webapi`'s README for the default admin login used on first run.
+per-shift note thread and replacement-request actions), a Replacement
+Requests page (open-queue view with each shift's time range, claim,
+cancel-your-own), and a Settings page (Admin-only patient name, shown on
+the Home page and in invitation emails/texts) all work. Validation and
+other API errors show as a plain, friendly message rather than raw JSON.
+Email/SMS notifications fire automatically from the backend for
+shift-assigned/replacement-requested/replacement-claimed/shift-removed/
+shift-time-changed/document-uploaded events, with the
+replacement-requested notification linking back to the Replacement
+Requests page — there's no dedicated frontend page for dispatch itself,
+it's backend-only. See `care-webapi`'s README for the default admin login
+used on first run.
 
 ## Quickstart (full stack)
 
