@@ -522,6 +522,36 @@ and how to claim an open shift, shown once automatically.
   `ApiException`-only — the whole point is that no single step's failure
   (of any kind) should ever block the independent steps after it.
 
+## Versioning
+
+Same pattern already proven in the sibling `nexstar-inventory-wasm-net9`
+project: app version lives in `src/Client/Care.Wasm.Client.csproj` as
+`<Version>X.Y</Version>` (two segments here — this app's policy is just
+major/minor, no patch level), read at runtime via
+`System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(2)`
+and displayed as `v{version}` pinned to the bottom of `Layout/NavMenu.razor`
+(a flex-column wrapper div with the nav links in a `flex-grow-1` region
+and the version caption below it, so it sticks to the bottom of the
+drawer regardless of how many nav links exist, rather than just being
+the last item in normal document flow).
+
+**This is the canonical way to confirm the correct Docker image is
+actually deployed** — after redeploying, the version shown in the nav
+drawer should match what was just pushed. If it doesn't, the container
+wasn't actually restarted with the new image (see this project's own
+`docker pull`/Portainer "Re-pull image" gotchas already documented
+elsewhere for this deployment).
+
+**Bump `<Version>` as part of every commit that gets pushed to this
+repo — increment the minor number (`X.Y` → `X.(Y+1)`) by default, or the
+major number (`X.Y` → `(X+1).0`) instead when the change is a
+significant feature or functional change, not a small fix/tweak.**
+Judgment call on "significant" is expected — a new page, a new user-facing
+workflow, or a security-relevant fix (e.g. the session-validity check
+above) warrants a major bump; a UI tweak, a copy change, or a bug fix to
+existing behavior warrants a minor bump. Started at `1.0` when this
+policy was introduced.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -650,6 +680,8 @@ every logged-in user. Phase 12 let Admins invite by phone number alone,
 with the invitee setting their own email on the Register page before
 their account activates. Phase 13 added a first-login onboarding wizard
 explaining the mobile hamburger menu and how to claim an open shift.
-Only the actual homelab deployment of this latest work remains — an
+Phase 14 added a version number in the nav menu as a deploy-verification
+marker, bumped on every push per the policy in "Versioning" above. Only
+the actual homelab deployment of this latest work remains — an
 operational step on the user's own infrastructure, not a code change
 tracked here.

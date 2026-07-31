@@ -1,13 +1,21 @@
-<MudNavMenu>
-    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
-    <MudNavLink Href="/calendar" Icon="@Icons.Material.Filled.CalendarMonth">Calendar</MudNavLink>
-    <MudNavLink Href="/replacement-requests" Icon="@Icons.Material.Filled.SwapHoriz">Replacement Requests</MudNavLink>
-    <MudNavLink Href="/documents" Icon="@Icons.Material.Filled.Folder">Documents</MudNavLink>
-    <MudNavLink Href="/account" Icon="@Icons.Material.Filled.AccountCircle">My Account</MudNavLink>
-    <AuthorizeView Roles="Admin">
-        <Authorized>
-            <MudNavLink Href="/users" Icon="@Icons.Material.Filled.People">Users</MudNavLink>
-            <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
-        </Authorized>
-    </AuthorizeView>
-</MudNavMenu>
+<div class="d-flex flex-column" style="height: 100%;">
+    <MudNavMenu Class="flex-grow-1">
+        <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+        <MudNavLink Href="/calendar" Icon="@Icons.Material.Filled.CalendarMonth">Calendar</MudNavLink>
+        <MudNavLink Href="/replacement-requests" Icon="@Icons.Material.Filled.SwapHoriz">Replacement Requests</MudNavLink>
+        <MudNavLink Href="/documents" Icon="@Icons.Material.Filled.Folder">Documents</MudNavLink>
+        <MudNavLink Href="/account" Icon="@Icons.Material.Filled.AccountCircle">My Account</MudNavLink>
+        <AuthorizeView Roles="Admin">
+            <Authorized>
+                <MudNavLink Href="/users" Icon="@Icons.Material.Filled.People">Users</MudNavLink>
+                <MudNavLink Href="/settings" Icon="@Icons.Material.Filled.Settings">Settings</MudNavLink>
+            </Authorized>
+        </AuthorizeView>
+    </MudNavMenu>
+    <MudText Typo="Typo.caption" Class="px-4 pb-2" Style="opacity: 0.6;">v@_version</MudText>
+</div>
+
+@code {
+    private static readonly string _version =
+        System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(2) ?? "";
+}
