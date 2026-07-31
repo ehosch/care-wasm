@@ -488,6 +488,27 @@ and how to claim an open shift, shown once automatically.
   user next time they load the app if unseen, not just brand-new
   registrants — one flag, one rule, no separate "new vs. existing
   account" branching.
+- **Discovered a real, pre-existing bug while testing this**: `MainLayout.razor`'s
+  `OnInitializedAsync` now also calls `IUsersClient.GetMeAsync(null)` first,
+  before anything else, and force-logs-out (`AuthService.LogoutAsync()`)
+  on a `401`/`404`. Reproduced by wiping the database (as the user
+  actually did in production — stopped the stack, deleted the MySQL/doc
+  volumes, restarted) while a browser tab still had a cached, unexpired
+  JWT from before the wipe: since login here is a stateless JWT with no
+  server-side session, `JwtAuthenticationService`'s client-side-only
+  `GetAuthenticationStateAsync` (decodes the cached token + checks local
+  expiry, no server round-trip) rendered the app as fully "logged in" for
+  a user ID that no longer existed in the fresh database — the token's
+  signature still validated fine against the unchanged JWT signing key.
+  `GetMeAsync` is the right existing endpoint to piggyback this check on
+  precisely because it's one of the few calls that does a real
+  `FindByIdAsync` lookup of "who does this token claim to be" (added in
+  Phase 11 for the My Account page) — most other endpoints either don't
+  look up the caller at all, or only 404 on unrelated not-found cases.
+  Verified by deleting a real test user's row directly in MySQL while a
+  tab held their still-valid cached token, then confirming a refresh
+  force-logged-out and cleared `localStorage`, while a normal
+  still-valid session was unaffected.
 
 ## Auth
 

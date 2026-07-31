@@ -4,6 +4,7 @@
 @using Care.Wasm.Client.Infrastructure.ApiClient
 @inject IAuthenticationService AuthService
 @inject ISettingsClient SettingsClient
+@inject IUsersClient UsersClient
 @inject ILocalStorageService LocalStorage
 @inject IDialogService DialogService
 
@@ -33,6 +34,24 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // JWT auth here has no server-side session — a locally cached token that's
+        // still unexpired will decode fine and look "logged in" client-side even if
+        // the account it refers to no longer exists (e.g. the database was wiped and
+        // reseeded). Confirm the account is still real before rendering as authenticated.
+        try
+        {
+            await UsersClient.GetMeAsync(null);
+        }
+        catch (ApiException ex) when (ex.StatusCode is 401 or 404)
+        {
+            await AuthService.LogoutAsync();
+            return;
+        }
+        catch (ApiException)
+        {
+            // Some other transient/network error — not evidence the session itself is invalid.
+        }
+
         try
         {
             var settings = await SettingsClient.GetSettingsAsync(null);
