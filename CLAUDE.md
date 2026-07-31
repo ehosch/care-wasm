@@ -458,6 +458,37 @@ required, now that SMS is set up via Twilio.
 - NSwag regen needed for the changed `CreateInviteRequest`/`RegisterRequest`/
   `UserDto` shapes and the new `GetInviteInfoAsync`/`InviteInfoDto`.
 
+## Phase 13 — first-login onboarding wizard
+
+A short, self-contained tour explaining the hidden mobile hamburger menu
+and how to claim an open shift, shown once automatically.
+
+- **New `Components/OnboardingWizard.razor`** — no separate code-behind,
+  same convention as `InviteDialog.razor`/`RequestReplacementDialog.razor`.
+  Four fixed steps (menu → finding open shifts → claiming a shift → done)
+  as a simple `_step` int with plain conditional rendering, deliberately
+  **not** `MudStepper` and **not** a live coach-mark tour tied to real
+  calendar data (a given week might have no uncovered slot to point at) —
+  just MudBlazor icons + text, no image/GIF assets to author or maintain.
+  Every step has a Skip button; the last step's primary button reads "Got
+  it" instead of "Next".
+- **Triggered from `Layout/MainLayout.razor`'s `OnInitializedAsync`**,
+  right after the existing patient-name fetch — checks a
+  `Blazored.LocalStorage` `ILocalStorageService` flag (`"onboardingSeen"`,
+  the same package/interface `JwtAuthenticationService.cs` already uses
+  for auth tokens, not a new dependency), and if unset, **sets it to
+  `true` before showing the dialog**, not after. That ordering is
+  deliberate: the flag must stick regardless of *how* the dialog gets
+  dismissed (a real button, Escape, clicking the backdrop), so setting it
+  post-dismiss would need handling every dismiss path individually.
+- **Deliberately client-side only (`localStorage`), not a server-side
+  column on the user** — a new device/browser sees it again, which is an
+  accepted trade-off (arguably useful for a tutorial) in exchange for
+  zero migration/endpoint/NSwag-regen surface. Trigger scope is *every*
+  user next time they load the app if unseen, not just brand-new
+  registrants — one flag, one rule, no separate "new vs. existing
+  account" branching.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -584,6 +615,8 @@ Requests page. Phase 11 added a self-service "My Account" page (email
 change with confirmation, phone number, password change) available to
 every logged-in user. Phase 12 let Admins invite by phone number alone,
 with the invitee setting their own email on the Register page before
-their account activates. Only the actual homelab deployment of this
-latest work remains — an operational step on the user's own
-infrastructure, not a code change tracked here.
+their account activates. Phase 13 added a first-login onboarding wizard
+explaining the mobile hamburger menu and how to claim an open shift.
+Only the actual homelab deployment of this latest work remains — an
+operational step on the user's own infrastructure, not a code change
+tracked here.

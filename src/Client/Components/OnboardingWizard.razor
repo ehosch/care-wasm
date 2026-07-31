@@ -1,0 +1,58 @@
+<MudDialog>
+    <DialogContent>
+        <div class="d-flex justify-center mb-4">
+            <MudIcon Icon="@_steps[_step].Icon" Color="Color.Primary" Style="font-size: 4rem;" />
+        </div>
+        <MudText Typo="Typo.h5" Class="mb-2" Align="Align.Center">@_steps[_step].Title</MudText>
+        <MudText Align="Align.Center">@_steps[_step].Body</MudText>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Skip">Skip</MudButton>
+        <MudSpacer />
+        @if (_step > 0)
+        {
+            <MudButton OnClick="Back">Back</MudButton>
+        }
+        @if (_step < _steps.Length - 1)
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Next">Next</MudButton>
+        }
+        else
+        {
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Close">Got it</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = default!;
+
+    private record Step(string Icon, string Title, string Body);
+
+    private readonly Step[] _steps =
+    {
+        new(Icons.Material.Filled.Menu,
+            "Welcome to Care Coordination",
+            "On a phone, the menu — Calendar, Documents, Replacement Requests, and more — is hidden until you tap the ☰ icon in the top-left corner. Tap it any time to get around."),
+        new(Icons.Material.Filled.CalendarMonth,
+            "Finding open shifts",
+            "Open the menu and tap Calendar. A light gray block means that time is uncovered. Colored blocks are shifts someone's already assigned to."),
+        new(Icons.Material.Filled.TouchApp,
+            "Claiming a shift",
+            "Tap an uncovered (gray) block to start claiming it — you'll automatically be the assignee. Tap the cell just past the highlighted range if you need more than an hour, then tap Save."),
+        new(Icons.Material.Filled.CheckCircle,
+            "You're all set",
+            "That's the basics! You can always check Documents or Replacement Requests from the same menu."),
+    };
+
+    private int _step;
+
+    private void Next() => _step++;
+
+    private void Back() => _step--;
+
+    private void Skip() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Close() => MudDialog.Close(DialogResult.Ok(true));
+}

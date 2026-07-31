@@ -1,7 +1,11 @@
+@using Blazored.LocalStorage
+@using Care.Wasm.Client.Components
 @using Care.Wasm.Client.Infrastructure.Auth
 @using Care.Wasm.Client.Infrastructure.ApiClient
 @inject IAuthenticationService AuthService
 @inject ISettingsClient SettingsClient
+@inject ILocalStorageService LocalStorage
+@inject IDialogService DialogService
 
 <MudAppBar Elevation="0">
     <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => _drawerOpen = !_drawerOpen)" />
@@ -37,6 +41,15 @@
         catch (ApiException)
         {
             // Non-fatal — the app bar just won't show the patient name.
+        }
+
+        if (await LocalStorage.GetItemAsync<bool?>("onboardingSeen") != true)
+        {
+            // Set before showing, not after — however the dialog gets dismissed
+            // (button, Escape, backdrop click), it must never reappear.
+            await LocalStorage.SetItemAsync("onboardingSeen", true);
+            await DialogService.ShowAsync<OnboardingWizard>("Welcome",
+                new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
         }
     }
 
