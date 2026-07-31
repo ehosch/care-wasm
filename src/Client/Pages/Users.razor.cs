@@ -97,4 +97,19 @@ public partial class Users
             _errorMessage = ex.Message;
         }
     }
+
+    private async Task OpenEditPhoneNumberDialog(UserDto user)
+    {
+        var parameters = new DialogParameters<EditPhoneNumberDialog>
+        {
+            { d => d.UserId, user.Id },
+            { d => d.CurrentPhoneNumber, user.PhoneNumber }
+        };
+        var result = await DialogService.ShowAsync<EditPhoneNumberDialog>("Edit phone number", parameters);
+        var dialogResult = await result.Result;
+        if (dialogResult is { Canceled: false })
+        {
+            await LoadUsersAsync();
+        }
+    }
 }

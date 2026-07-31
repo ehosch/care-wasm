@@ -10,14 +10,18 @@ client.
 
 ## Status
 
-Phase 0 (scaffold) through Phase 5 (Shift Notes) are done — login, a Users
-page (invite/resend/revoke/change role, Admin only), self-service
-registration from an invite link, forgot/reset password, a Documents page
+Phase 0 (scaffold) through Phase 6 (Notifications) are done — login, a
+Users page (invite/resend/revoke/change role, phone number, Admin only),
+self-service registration from an invite link (optionally with a phone
+number for SMS), forgot/reset password, a Documents page
 (upload/replace/delete/version-history for Admins, view and download for
 everyone), a Calendar page (week-grid view of Day/Evening/Overnight shifts,
 self-claim of open shifts, admin direct-assign, a per-shift note thread),
 and a Replacement Requests page (open-queue view, claim, cancel-your-own)
-all work. See
+all work. Email/SMS notifications fire automatically from the backend for
+shift-assigned/replacement-requested/replacement-claimed/document-uploaded
+events — there's no dedicated frontend page for this, it's backend-only
+dispatch. See
 `care-webapi`'s README for the default admin login used on first run.
 
 ## Quickstart (full stack)

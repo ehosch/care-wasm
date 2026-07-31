@@ -150,6 +150,23 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
   gated by `AuthorizeView` — notes are readable/postable by anyone,
   regardless of admin role or shift assignment.
 
+## Phase 6 (Notifications)
+
+Notification dispatch itself is entirely backend (Hangfire-enqueued email +
+SMS) — no dedicated frontend page. The only frontend work is collecting a
+phone number:
+
+- `Pages/Register.razor` — optional "Phone number (optional, for SMS
+  notifications)" field bound to the generated `RegisterRequest.PhoneNumber`,
+  same `EditForm`/`_model` pattern already used for Name/Password.
+- `Pages/Users.razor`/`.razor.cs` — new Phone column showing `"—"` when
+  null, with a small edit icon opening `Components/EditPhoneNumberDialog.razor`
+  (single field, mirrors `InviteDialog.razor`'s inline-`@code` simplicity)
+  that calls the new `IUsersClient.UpdatePhoneNumberAsync`. No extra
+  `AuthorizeView` needed — the whole page is already `[Authorize(Roles =
+  "Admin")]`, and (unlike role-changing) there's no "can't edit your own"
+  restriction on phone numbers.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -268,5 +285,6 @@ Phase 1 (Auth & Users — invite/register/roles/forgot-password), Phase 2
 (Documents — upload/replace/delete/version-history), Phase 3 (Care Calendar
 Core — week-grid view, admin direct-assign), Phase 4 (Self-Assign &
 Replacement Requests — claim, request/cancel/claim replacement, open queue),
-and Phase 5 (Shift Notes — per-shift comment thread) are done. Only SMS/email
-notification dispatch remains from the original spec.
+Phase 5 (Shift Notes — per-shift comment thread), and Phase 6
+(Notifications — phone number collection, backend email/SMS dispatch) are
+done. Only Phase 7 (deploy polish, mobile-responsive calendar) remains.

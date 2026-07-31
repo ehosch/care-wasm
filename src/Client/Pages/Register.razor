@@ -27,6 +27,10 @@ else
                 <MudTextField T="string" Label="Confirm password" Variant="Variant.Outlined" @bind-Value="_confirmPassword"
                     InputType="InputType.Password" />
             </MudItem>
+            <MudItem xs="12">
+                <MudTextField T="string" Label="Phone number (optional, for SMS notifications)" Variant="Variant.Outlined"
+                    @bind-Value="_model.PhoneNumber" />
+            </MudItem>
             <MudItem xs="12" Class="d-flex justify-center">
                 <MudButton ButtonType="ButtonType.Submit" Disabled="_busy" Variant="Variant.Filled"
                     Color="Color.Primary" Size="Size.Large" Style="width: 100%;">

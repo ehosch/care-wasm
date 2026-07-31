@@ -17,6 +17,7 @@
     <HeaderContent>
         <MudTh>Name</MudTh>
         <MudTh>Email</MudTh>
+        <MudTh>Phone</MudTh>
         <MudTh>Role</MudTh>
         <MudTh>Status</MudTh>
         <MudTh></MudTh>
@@ -24,6 +25,10 @@
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Phone">
+            @(context.PhoneNumber ?? "—")
+            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" OnClick="@(() => OpenEditPhoneNumberDialog(context))" />
+        </MudTd>
         <MudTd DataLabel="Role">@context.Role</MudTd>
         <MudTd DataLabel="Status">@context.Status</MudTd>
         <MudTd>

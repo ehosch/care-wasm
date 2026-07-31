@@ -1,0 +1,57 @@
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<MudDialog>
+    <DialogContent>
+        <MudTextField T="string" Label="Phone number" Variant="Variant.Outlined" @bind-Value="_phoneNumber" />
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@_errorMessage</MudAlert>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SubmitAsync">Save</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = default!;
+
+    [Inject]
+    private IUsersClient UsersClient { get; set; } = default!;
+
+    [Parameter]
+    public string UserId { get; set; } = string.Empty;
+
+    [Parameter]
+    public string? CurrentPhoneNumber { get; set; }
+
+    private string _phoneNumber = string.Empty;
+    private bool _busy;
+    private string? _errorMessage;
+
+    protected override void OnInitialized() => _phoneNumber = CurrentPhoneNumber ?? string.Empty;
+
+    private async Task SubmitAsync()
+    {
+        _busy = true;
+        _errorMessage = null;
+        try
+        {
+            string? phoneNumber = string.IsNullOrWhiteSpace(_phoneNumber) ? null : _phoneNumber;
+            await UsersClient.UpdatePhoneNumberAsync(UserId, null, new UpdatePhoneNumberRequest { PhoneNumber = phoneNumber });
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}
