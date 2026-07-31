@@ -19,7 +19,58 @@ else
         Shown on the Home page and in invitation emails/texts. Leave blank to hide it.
     </MudText>
 
-    <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
+    <MudText Typo="Typo.h6" Class="mb-2">Notifications</MudText>
+    <MudText Typo="Typo.caption" Class="mb-2" Style="opacity: 0.7;">
+        Choose which alerts send email and/or text notifications.
+    </MudText>
+    <MudSimpleTable Dense="true" Style="max-width: 500px;">
+        <thead>
+            <tr>
+                <th>Alert</th>
+                <th style="text-align:center;">Email</th>
+                <th style="text-align:center;">Text</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Shift assigned</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftAssignedEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftAssignedSms" /></td>
+            </tr>
+            <tr>
+                <td>Replacement requested</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyReplacementRequestedEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyReplacementRequestedSms" /></td>
+            </tr>
+            <tr>
+                <td>Replacement claimed</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyReplacementClaimedEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyReplacementClaimedSms" /></td>
+            </tr>
+            <tr>
+                <td>Document uploaded</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyDocumentUploadedEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyDocumentUploadedSms" /></td>
+            </tr>
+            <tr>
+                <td>Shift removed</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftRemovedEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftRemovedSms" /></td>
+            </tr>
+            <tr>
+                <td>Shift time changed</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftBoundaryChangedEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftBoundaryChangedSms" /></td>
+            </tr>
+            <tr>
+                <td>Shift reminder (1 hour before)</td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftReminderEmail" /></td>
+                <td style="text-align:center;"><MudCheckBox T="bool" @bind-Value="_notifyShiftReminderSms" /></td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <MudButton Class="mt-4" Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
 
     @if (_saved)
     {

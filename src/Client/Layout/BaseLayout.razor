@@ -1,6 +1,9 @@
 @inherits LayoutComponentBase
+@using Care.Wasm.Client.Infrastructure.Theme
+@inject IThemeService ThemeService
+@implements IDisposable
 
-<MudThemeProvider />
+<MudThemeProvider IsDarkMode="ThemeService.IsDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
@@ -21,3 +24,16 @@
         </MudLayout>
     </Authorized>
 </AuthorizeView>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ThemeService.InitializeAsync();
+        ThemeService.OnChange += StateHasChanged;
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged;
+    }
+}

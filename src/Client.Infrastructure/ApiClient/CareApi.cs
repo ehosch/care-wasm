@@ -4436,6 +4436,48 @@ namespace Care.Wasm.Client.Infrastructure.ApiClient
         [Newtonsoft.Json.JsonProperty("patientName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? PatientName { get; set; } = default!;
 
+        [Newtonsoft.Json.JsonProperty("notifyShiftAssignedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftAssignedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftAssignedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftAssignedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementRequestedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementRequestedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementRequestedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementRequestedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementClaimedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementClaimedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementClaimedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementClaimedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyDocumentUploadedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyDocumentUploadedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyDocumentUploadedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyDocumentUploadedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftRemovedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftRemovedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftRemovedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftRemovedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftBoundaryChangedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftBoundaryChangedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftBoundaryChangedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftBoundaryChangedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftReminderEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftReminderEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftReminderSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftReminderSms { get; set; } = default!;
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "14.1.0.0 (NJsonSchema v11.0.2.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -4443,6 +4485,48 @@ namespace Care.Wasm.Client.Infrastructure.ApiClient
     {
         [Newtonsoft.Json.JsonProperty("patientName", Required = Newtonsoft.Json.Required.Default, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
         public string? PatientName { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftAssignedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftAssignedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftAssignedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftAssignedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementRequestedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementRequestedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementRequestedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementRequestedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementClaimedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementClaimedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyReplacementClaimedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyReplacementClaimedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyDocumentUploadedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyDocumentUploadedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyDocumentUploadedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyDocumentUploadedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftRemovedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftRemovedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftRemovedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftRemovedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftBoundaryChangedEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftBoundaryChangedEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftBoundaryChangedSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftBoundaryChangedSms { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftReminderEmail", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftReminderEmail { get; set; } = default!;
+
+        [Newtonsoft.Json.JsonProperty("notifyShiftReminderSms", Required = Newtonsoft.Json.Required.DisallowNull, NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore)]
+        public bool NotifyShiftReminderSms { get; set; } = default!;
 
     }
 

@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using Care.Wasm.Client.Infrastructure.ApiClient;
 using Care.Wasm.Client.Infrastructure.Auth;
 using Care.Wasm.Client.Infrastructure.Common;
+using Care.Wasm.Client.Infrastructure.Theme;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MudBlazor;
@@ -33,7 +34,8 @@ public static class Startup
             })
             .AddAuthenticationHandler()
             .Services
-            .AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(ClientName));
+            .AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient(ClientName))
+            .AddScoped<IThemeService, ThemeService>();
 
     private static IServiceCollection AutoRegisterInterfaces<T>(this IServiceCollection services)
     {

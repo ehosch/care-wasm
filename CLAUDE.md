@@ -550,7 +550,49 @@ Judgment call on "significant" is expected — a new page, a new user-facing
 workflow, or a security-relevant fix (e.g. the session-validity check
 above) warrants a major bump; a UI tweak, a copy change, or a bug fix to
 existing behavior warrants a minor bump. Started at `1.0` when this
-policy was introduced.
+policy was introduced. **Gap in following this policy**: the two commits
+immediately after this one shipped (the session-validity force-logout
+fix, and the `MainLayout` exception-handling isolation fix) did *not*
+bump the version — a real miss, not intentional. The version number is
+therefore a slight undercount of actual pushes as of Phase 15's `2.0`
+bump; don't assume every distinct push has a distinct version until
+this note is removed once confidence is restored.
+
+## Phase 15 — per-trigger notification toggles + shift reminder + dark mode
+
+Three independent additions in one push (bumped the **major** version for
+this one — new admin-facing settings, a brand-new alert trigger, and a
+new app-wide UI feature all at once, not a small tweak):
+
+- **`Pages/Settings.razor`** gained a "Notifications" section below
+  Patient Name — a plain `MudSimpleTable`, one row per trigger (7 rows:
+  the 6 existing triggers plus the new shift reminder), two `MudCheckBox`
+  columns (Email/Text) each. All 14 flags plus `PatientName` still go out
+  in the page's existing single `PUT`/Save action — these all live on the
+  same settings row, so one combined save is the right granularity here,
+  unlike `Account.razor`'s deliberately-separate per-section pattern
+  (those hit three genuinely different endpoints with different side
+  effects; this is one row, one endpoint).
+- NSwag regen was required — `AppSettingsDto`/`UpdateSettingsRequest`
+  both grew the same 14 boolean fields.
+- **New `Client.Infrastructure/Theme/IThemeService.cs`/`ThemeService.cs`**
+  (registered `AddScoped`) — holds `IsDarkMode` + an `OnChange` event,
+  backed by a `"darkMode"` `Blazored.LocalStorage` flag (same
+  per-browser-preference convention as `"onboardingSeen"`). `BaseLayout.razor`
+  is the only place that actually binds `<MudThemeProvider IsDarkMode="...">`
+  (one-way — MudBlazor never mutates this itself) and subscribes
+  `ThemeService.OnChange` to its own `StateHasChanged` (implements
+  `IDisposable` to unsubscribe). `MainLayout.razor`'s app bar has a new
+  icon button immediately before Logout — shows a moon in light mode /
+  sun in dark mode (icon represents the mode you'd switch *to*), calling
+  `ThemeService.ToggleAsync()`.
+- **Known cosmetic gap, not fixed as part of this phase**: the Calendar
+  grid's shift-block background colors (green/amber for covered, light
+  gray for uncovered) are hardcoded light-mode colors with no dark-mode
+  variant, so shift-cell text has noticeably lower contrast in dark mode.
+  Flagged to the user rather than silently expanding scope — this phase
+  was specifically "add a toggle," not "audit every page's dark-mode
+  contrast." Worth a follow-up pass if it's bothersome in practice.
 
 ## Auth
 
@@ -681,7 +723,9 @@ with the invitee setting their own email on the Register page before
 their account activates. Phase 13 added a first-login onboarding wizard
 explaining the mobile hamburger menu and how to claim an open shift.
 Phase 14 added a version number in the nav menu as a deploy-verification
-marker, bumped on every push per the policy in "Versioning" above. Only
-the actual homelab deployment of this latest work remains — an
-operational step on the user's own infrastructure, not a code change
-tracked here.
+marker, bumped on every push per the policy in "Versioning" above.
+Phase 15 added per-trigger email/SMS notification toggles, a new
+"shift starts in about an hour" reminder alert, and a light/dark mode
+toggle next to Logout. Only the actual homelab deployment of this latest
+work remains — an operational step on the user's own infrastructure, not
+a code change tracked here.
