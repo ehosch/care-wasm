@@ -21,13 +21,20 @@
             @if (_isCreating)
             {
                 <MudText Typo="Typo.caption">Assign to</MudText>
-                <MudSelect T="string" Value="@_createAssignedUserId" ValueChanged="@((string id) => _createAssignedUserId = id)"
-                    Dense="true" Disabled="!_isAdmin" Style="max-width: 220px;">
-                    @foreach (var user in _activeUsers)
-                    {
-                        <MudSelectItem Value="@user.Id">@(user.Id == _currentUserId ? "Me" : user.Name)</MudSelectItem>
-                    }
-                </MudSelect>
+                @if (_isAdmin)
+                {
+                    <MudSelect T="string" Value="@_createAssignedUserId" ValueChanged="@((string id) => _createAssignedUserId = id)"
+                        Dense="true" Style="max-width: 220px;">
+                        @foreach (var user in _activeUsers)
+                        {
+                            <MudSelectItem Value="@user.Id">@(user.Id == _currentUserId ? "Me" : user.Name)</MudSelectItem>
+                        }
+                    </MudSelect>
+                }
+                else
+                {
+                    <MudText>Me</MudText>
+                }
             }
             <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
             @if (!_isCreating && _isAdmin)

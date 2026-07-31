@@ -56,11 +56,21 @@ public partial class ShiftCalendar
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         _isAdmin = authState.User.IsInRole("Admin");
-
-        var users = await UsersClient.GetUsersAsync(null);
-        _activeUsers = users.Where(u => u.Status == "Active").ToList();
-
         _weekStart = StartOfWeek(DateOnly.FromDateTime(DateTime.Today));
+
+        if (_isAdmin)
+        {
+            try
+            {
+                var users = await UsersClient.GetUsersAsync(null);
+                _activeUsers = users.Where(u => u.Status == "Active").ToList();
+            }
+            catch (ApiException)
+            {
+                // Non-fatal — the assignee picker just won't have other options.
+            }
+        }
+
         await LoadShiftsAsync();
     }
 
