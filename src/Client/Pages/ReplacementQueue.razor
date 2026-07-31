@@ -14,7 +14,7 @@
         <MudTh></MudTh>
     </HeaderContent>
     <RowTemplate>
-        <MudTd DataLabel="Shift">@context.ShiftType — @context.ShiftDate.ToString("ddd, MMM d")</MudTd>
+        <MudTd DataLabel="Shift">@context.ShiftDate.ToString("ddd, MMM d")</MudTd>
         <MudTd DataLabel="Requested by">@context.RequestedByName</MudTd>
         <MudTd DataLabel="Reason">@context.Reason</MudTd>
         <MudTd DataLabel="Requested">@context.CreatedAt.ToLocalTime().ToString("g")</MudTd>

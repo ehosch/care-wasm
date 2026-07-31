@@ -15,17 +15,17 @@ Users page (invite/resend/revoke/change role, phone number, Admin only),
 self-service registration from an invite link (optionally with a phone
 number for SMS), forgot/reset password, a Documents page
 (upload/replace/delete/version-history for Admins, view and download for
-everyone), a Calendar page (week-grid view of Day/Evening/Overnight shifts,
-color-coded by status with each cell's actual start/end time and a warning
-when adjusting a shift has left a gap before the next one, self-claim of
-open shifts, admin direct-assign, sliders for an Admin or the assigned
-member to nudge a shift's start/end time, a per-shift note thread), and a
-Replacement Requests page (open-queue view, claim, cancel-your-own) all
-work. Validation and other API errors show as a plain, friendly message
-rather than raw JSON. Email/SMS notifications fire automatically from the
+everyone), a Calendar page (a 24-hour-block grid per day, no fixed shift
+types — click an uncovered stretch to claim or assign it, click an
+existing shift to resize or delete it, growing into a neighbor
+shrinks/absorbs it and shrinking away lets a neighbor reclaim the time, a
+per-shift note thread and replacement-request actions), and a Replacement
+Requests page (open-queue view, claim, cancel-your-own) all work.
+Validation and other API errors show as a plain, friendly message rather
+than raw JSON. Email/SMS notifications fire automatically from the
 backend for shift-assigned/replacement-requested/replacement-claimed/
-document-uploaded/schedule-gap events — there's no dedicated frontend page
-for this, it's backend-only dispatch. See
+shift-removed/shift-time-changed/document-uploaded events — there's no
+dedicated frontend page for this, it's backend-only dispatch. See
 `care-webapi`'s README for the default admin login used on first run.
 
 ## Quickstart (full stack)

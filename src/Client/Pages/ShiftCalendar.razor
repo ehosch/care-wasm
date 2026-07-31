@@ -13,6 +13,32 @@
     <MudButton Size="Size.Small" OnClick="GoToThisWeekAsync">This week</MudButton>
 </MudToolBar>
 
+@if (_pendingStart is not null && _pendingEnd is not null)
+{
+    <MudPaper Class="pa-3 mb-2" Elevation="2">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText>@FormatRange(_pendingStart.Value, _pendingEnd.Value)</MudText>
+            @if (_isCreating)
+            {
+                <MudText Typo="Typo.caption">Assign to</MudText>
+                <MudSelect T="string" Value="@_createAssignedUserId" ValueChanged="@((string id) => _createAssignedUserId = id)"
+                    Dense="true" Disabled="!_isAdmin" Style="max-width: 220px;">
+                    @foreach (var user in _activeUsers)
+                    {
+                        <MudSelectItem Value="@user.Id">@(user.Id == _currentUserId ? "Me" : user.Name)</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">Save</MudButton>
+            @if (!_isCreating && _isAdmin)
+            {
+                <MudButton Color="Color.Error" Disabled="_busy" OnClick="DeleteAsync">Delete</MudButton>
+            }
+            <MudButton Disabled="_busy" OnClick="ClearPending">Cancel</MudButton>
+        </MudStack>
+    </MudPaper>
+}
+
 @if (_loading)
 {
     <MudProgressCircular Indeterminate="true" />
@@ -20,10 +46,10 @@
 else
 {
     <div style="overflow-x: auto;">
-        <MudSimpleTable Bordered="true" Dense="true">
+        <table style="border-collapse: collapse; width: 100%;">
             <thead>
                 <tr>
-                    <th></th>
+                    <th style="width: 48px;"></th>
                     @for (int i = 0; i < 7; i++)
                     {
                         var day = _weekStart.AddDays(i);
@@ -32,67 +58,62 @@ else
                 </tr>
             </thead>
             <tbody>
-                @foreach (var shiftType in _shiftTypes)
+                @for (int hour = 0; hour < 24; hour++)
                 {
-                    <tr>
-                        <td><b>@shiftType</b></td>
+                    var h = hour;
+                    <tr style="height: 22px;">
+                        <td style="text-align:right; padding-right:4px; font-size:0.7rem; color:gray; white-space:nowrap;">@FormatHourLabel(h)</td>
                         @for (int i = 0; i < 7; i++)
                         {
                             var day = _weekStart.AddDays(i);
-                            var shift = FindShift(day, shiftType);
-                            <td style="@(shift is null ? null : $"background-color:{CellBackgroundColor(shift)};")">
-                                @if (shift is null)
+                            var info = GetCellInfo(day, h);
+                            <td style="@CellStyle(info)" @onclick="@(() => HandleCellClick(day, h))">
+                                @if (info.IsFirstHour && info.Kind == CellKind.Shift && info.Shift is not null)
                                 {
-                                    <MudText Typo="Typo.caption">—</MudText>
-                                }
-                                else
-                                {
-                                    <MudText>@(shift.AssignedUserName ?? "Open")</MudText>
-                                    <MudText Typo="Typo.caption">@FormatTimeRange(shift)</MudText>
-                                    @if (shift.Status == ShiftStatus.Open)
-                                    {
-                                        <MudButton Size="Size.Small" OnClick="@(() => ClaimAsync(shift))">Claim</MudButton>
-                                    }
-                                    else if (shift.Status == ShiftStatus.Assigned && shift.AssignedUserId == _currentUserId)
-                                    {
-                                        <MudButton Size="Size.Small" OnClick="@(() => OpenRequestReplacementDialog(shift))">Request replacement</MudButton>
-                                    }
-                                    else if (shift.Status == ShiftStatus.ReplacementRequested)
-                                    {
-                                        <MudText Typo="Typo.caption">Replacement requested</MudText>
-                                        @if (shift.PendingReplacementRequestedByUserId == _currentUserId)
+                                    var shift = info.Shift;
+                                    <div style="font-size:0.75rem; line-height:1.2; padding:1px 2px;">
+                                        <div>@shift.AssignedUserName</div>
+                                        <div style="opacity:0.7;">@FormatTimeRange(shift)</div>
+                                        @if (shift.Status == ShiftStatus.Assigned && shift.AssignedUserId == _currentUserId)
                                         {
-                                            <MudButton Size="Size.Small" Color="Color.Error" OnClick="@(() => CancelReplacementRequestAsync(shift))">Cancel request</MudButton>
+                                            <span @onclick:stopPropagation="true">
+                                                <MudButton Size="Size.Small" OnClick="@(() => OpenRequestReplacementDialog(shift))">Request replacement</MudButton>
+                                            </span>
                                         }
-                                    }
-                                    <AuthorizeView Roles="Admin" Context="authContext">
-                                        <Authorized>
-                                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
-                                                OnClick="@(() => OpenAssignDialog(shift))" />
-                                        </Authorized>
-                                    </AuthorizeView>
-                                    @if (CanAdjustTimes(shift))
-                                    {
-                                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit"
-                                            OnClick="@(() => OpenAssignDialog(shift))" />
-                                    }
-                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Comment"
-                                        OnClick="@(() => OpenNotesDialog(shift))" />
-                                    @if (shift.NoteCount > 0)
-                                    {
-                                        <MudText Typo="Typo.caption">@shift.NoteCount</MudText>
-                                    }
-                                    @if (shift.GapAfterMinutes is { } gapMinutes)
-                                    {
-                                        <MudText Typo="Typo.caption" Color="Color.Warning">⚠ @gapMinutes-min gap before next shift</MudText>
-                                    }
+                                        else if (shift.Status == ShiftStatus.ReplacementRequested)
+                                        {
+                                            <div>Replacement requested</div>
+                                            @if (shift.PendingReplacementRequestedByUserId == _currentUserId)
+                                            {
+                                                <span @onclick:stopPropagation="true">
+                                                    <MudButton Size="Size.Small" Color="Color.Error" OnClick="@(() => CancelReplacementRequestAsync(shift))">Cancel request</MudButton>
+                                                </span>
+                                            }
+                                        }
+                                        <span @onclick:stopPropagation="true">
+                                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Comment"
+                                                OnClick="@(() => OpenNotesDialog(shift))" />
+                                        </span>
+                                        @if (shift.NoteCount > 0)
+                                        {
+                                            <span>@shift.NoteCount</span>
+                                        }
+                                        <AuthorizeView Roles="Admin" Context="authContext">
+                                            <Authorized>
+                                                <span @onclick:stopPropagation="true">
+                                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.SwapHoriz"
+                                                        OnClick="@(() => OpenReassignDialog(shift))" />
+                                                </span>
+                                            </Authorized>
+                                        </AuthorizeView>
+                                    </div>
                                 }
                             </td>
                         }
                     </tr>
                 }
             </tbody>
-        </MudSimpleTable>
+        </table>
     </div>
 }
 

@@ -66,6 +66,11 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
 
 ## Phase 3 pages (Care Calendar)
 
+**Superseded by Phase 9** — the 3-row Day/Evening/Overnight table,
+`AssignShiftDialog`, and the per-cell "Claim" button described below no
+longer exist; see Phase 9's section for the current 24-hour grid. Left
+here for history/context.
+
 - `Pages/ShiftCalendar.razor` (`/calendar`, `[Authorize]`, no role
   restriction) — prev/this-week/next-week navigation over a plain HTML
   table (Sunday-start, 3 rows for Day/Evening/Overnight × 7 day columns).
@@ -103,6 +108,10 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
   which works just as well for testing this kind of flex/overflow bug).
 
 ## Phase 4 pages (Self-Assign & Replacement Requests)
+
+**The "Claim" button described below no longer exists** (Phase 9 — claiming
+uncovered time is now just clicking the uncovered cell and saving); the
+Request-replacement/Cancel-request behavior is unchanged.
 
 - `Pages/ShiftCalendar.razor`/`.razor.cs` — extended with the current
   user's id (`ClaimTypes.NameIdentifier`, same pattern as `Users.razor.cs`'s
@@ -204,57 +213,86 @@ fallback for network errors, since `AuthService.LoginAsync` already
 returns `false` for a bad password) — `ApiErrorHelper` has a second
 `GetFriendlyMessage(Exception)` overload for that call site.
 
-## Calendar color coding, times, and adjustable shift boundaries
+## Calendar color coding, times, and adjustable shift boundaries (Phase 8)
 
-- `Pages/ShiftCalendar.razor`/`.razor.cs` — each cell's background now
-  reflects `ShiftDto.Status` (`CellBackgroundColor`: Open = light gray,
-  Assigned = light green, ReplacementRequested = light amber, inline
-  `style`, not a MudBlazor color prop, since this is a cell background not
-  a themed component) and shows the shift's formatted `StartTime`–`EndTime`
-  range under the assignee/"Open" text. When `ShiftDto.GapAfterMinutes` is
-  non-null, a small warning caption appears ("⚠ N-min gap before next
-  shift").
-- **The Admin edit icon and the assigned-member edit icon are two separate
-  conditionally-rendered `MudIconButton`s, not one shared check** — the
-  `<AuthorizeView Roles="Admin">`-wrapped icon (Phase 3) is unchanged and
-  always available to Admins regardless of assignment; a second icon
-  (gated by `CanAdjustTimes(shift)`, which is deliberately `!_isAdmin &&
-  shift.AssignedUserId == _currentUserId`) additionally lets the assigned
-  non-admin member reach the same dialog for their own shift. The
-  `!_isAdmin` guard avoids rendering both icons side-by-side for an Admin
-  who happens to also be the assignee.
-- `Components/AssignShiftDialog.razor`/`.razor.cs` — gained two
-  `MudSlider<int>` (minutes-since-midnight, `Min="0" Max="1439" Step="15"`)
-  for start/end time, defaulting to the shift's **current** times (passed
-  in as new `CurrentStartTime`/`CurrentEndTime` parameters from
-  `ShiftCalendar.razor.cs`), not the shift-template default — adjustments
-  compound on top of any prior adjustment. The dialog now injects
-  `AuthenticationStateProvider` itself (rather than taking an `IsAdmin`
-  parameter) to decide whether the assignee `MudSelect` is interactive
-  (`Disabled="!_isAdmin"` — visible to everyone, but only an Admin can
-  actually reassign) and whether `Save` calls `AssignAsync` at all (a
-  non-admin assigned member's Save only calls `AdjustTimesAsync`, since
-  the assign endpoint is Admin-only server-side anyway).
-  - **`MudSelect`'s closed-state display can render the raw bound value
-    (a GUID string) instead of the matching `MudSelectItem`'s label on
-    first paint**, until the user interacts with it (open/close the
-    dropdown) or any re-render occurs after `_activeUsers` finishes
-    loading — cosmetic only, the underlying `Value`/selection is correct
-    the whole time. Not fixed (pre-existing `MudSelect` behavior from
-    Phase 3's Value/ValueChanged pattern, not something Phase 8 introduced
-    or was asked to address) — worth knowing if a future screenshot looks
-    wrong immediately after a dialog opens.
-  - **Save on 409 (`ApiException.StatusCode == 409`) shows the server's
-    conflict message (gap length + neighbor shift, via
-    `ApiErrorHelper.GetFriendlyMessage`) in a warning alert with a
-    "Continue anyway" button**, instead of a dead-end error — clicking it
-    resubmits the same `AdjustTimesAsync` call with `ConfirmGap: true`.
-    This is the one dialog in the app where a 409 is a normal, expected
-    step in the flow rather than a terminal failure.
-- NSwag regen workaround used here (documented below) picks up
-  `AdjustShiftTimesRequest`/`IShiftsClient.AdjustTimesAsync` and
-  `ShiftDto.GapAfterMinutes` automatically — no manual edits to
-  `CareApi.cs` needed for this feature.
+**Fully superseded by Phase 9** — the slider-based `AssignShiftDialog`
+described here was deleted entirely (not just modified) and replaced by
+direct click-to-toggle editing on the calendar grid. Nothing in this
+section reflects the current code; see Phase 9's section below.
+
+## Phase 9 — blockless calendar (24-hour grid, click-to-toggle editing)
+
+There are no more shift types. A day is just 24 fillable hourly blocks;
+nothing is a "shift" until someone claims or is assigned a contiguous run
+of them.
+
+- `Pages/ShiftCalendar.razor`/`.razor.cs` — a plain HTML table, 24 rows
+  (hour 0-23) × 7 day columns, replacing the old 3-row Day/Evening/Overnight
+  table. Row height is a compact ~22px to address the old layout's wasted
+  vertical space. `GetCellInfo(day, hour)` determines what a given
+  (day, hour) cell shows by scanning the loaded `_shifts` for absolute
+  interval overlap (same `GetAbsoluteStart`/`GetAbsoluteEnd` math as
+  `care-webapi`'s `ShiftService.cs`, ported client-side) — there's no more
+  `(Date, ShiftType)` lookup since shifts aren't typed. A cell is one of
+  three kinds: `Uncovered` (light gray, clickable to start a new shift),
+  `Shift` (green/amber by `Status`), or `Pending` (blue — the shift
+  currently being created or resized, see below). **Known accepted
+  limitation, same precedent as Phase 8's old `GapAfterMinutes` week-edge
+  behavior**: a shift starting the day before the displayed week isn't
+  loaded, so its bleed into the first day's early-morning hours won't
+  render as covered.
+- **No more per-shift edit icon** — clicking anywhere on an editable
+  shift's cells (Admin, or the shift's own assignee — `CanEdit(shift)`)
+  directly enters edit mode for that shift; clicking an uncovered cell
+  starts a brand-new pending selection. Buttons that live *inside* a
+  shift's cell (notes icon, Request/Cancel replacement, the Admin-only
+  Reassign icon) each wrap their `MudButton`/`MudIconButton` in a plain
+  `<span @onclick:stopPropagation="true">` — **`@onclick:stopPropagation`
+  cannot be applied directly to a MudBlazor component**, since MudBlazor
+  components take a `OnClick` `EventCallback` parameter, not a raw
+  `@onclick` attribute, and the directive's codegen collides with it
+  (`RZ10010: the component parameter 'OnClick' is used two or more
+  times`). Wrapping in a plain HTML element is the fix — don't try to put
+  `@onclick:stopPropagation` on a `MudButton`/`MudIconButton` itself again.
+- **Editing model — only the 1-2 cells adjacent to the pending range's
+  current boundary are ever clickable**, growing or shrinking it by
+  exactly one hour per click (`HandleCellClick`): clicking the range's
+  current first/last hour shrinks it (clearing the whole pending
+  selection entirely if that would leave zero duration — same as
+  Cancel); clicking the cell just outside the first/last hour grows it.
+  This keeps the range contiguous by construction with no separate
+  validation step. All of this is local component state
+  (`_pendingStart`/`_pendingEnd`/`_isCreating`/`_editingShiftId`) — no API
+  calls happen until Save.
+- An inline `MudPaper` action bar (not a modal dialog) appears above the
+  grid whenever a pending range exists, showing the formatted range, an
+  assignee picker (only interactive for Admins — non-admins are locked to
+  themselves) when creating, and Save/Cancel/(Admin-only Delete) buttons.
+  Save calls `POST /api/shifts` (creating) or `PUT /{id}/times` (resizing
+  an existing shift); Delete calls `DELETE /{id}` after a plain
+  `DialogService.ShowMessageBox` confirm.
+- **Full-absorb courtesy confirm is entirely client-side** — before
+  Save, if the pending range would fully swallow an existing shift
+  (checkable locally since the week's shifts are already loaded),
+  `DialogService.ShowMessageBox` asks to confirm, naming the
+  about-to-be-removed shift's assignee. There is no backend equivalent of
+  this anymore (see care-webapi's Phase 9 gotchas) — this is purely a
+  frontend nicety, not enforced server-side.
+- **`Components/AssignShiftDialog` is gone, replaced by
+  `Components/ReassignShiftDialog.razor`/`.razor.cs`** — just the
+  assignee `MudSelect` (Admin-only entry point via the small
+  `SwapHoriz`-icon button in a shift's cell), calling
+  `IShiftsClient.AssignAsync`. No more sliders, no more `AdjustTimesAsync`
+  call in this dialog — time editing lives entirely in the grid now.
+- **The old `ClaimAsync`/"Claim" button is gone** — claiming previously-
+  uncovered time is just clicking the uncovered cell(s) and saving with
+  yourself as the assignee, same unified flow as any other creation.
+- NSwag regen **was** required for this phase (unlike Phase 8) — the DTO
+  shapes changed meaningfully (`ShiftType` dropped, `CreateShiftRequest`
+  added, `AssignShiftRequest`/`AdjustShiftTimesRequest` reshaped,
+  `GapAfterMinutes` dropped). Already regenerated as part of this phase;
+  future changes to the shift endpoints will need the same regen
+  workaround documented below.
 
 ## Auth
 
@@ -371,8 +409,9 @@ place, silently serving the old baked-in URL.
 
 See `../CLAUDE_CARE.md` for the full phased plan. Every phase is done,
 including Phase 7's mobile-responsive calendar fix. Phase 8 (post-go-live,
-driven by real production use) added friendly validation error messages
-and calendar color-coding/time-display/gap-indicator/adjustable-time
-sliders — see the sections above. Only the actual homelab deployment of
-this latest work remains — an operational step on the user's own
+driven by real production use) added friendly validation error messages;
+its slider-based calendar UI was then fully replaced by Phase 9's
+blockless 24-hour grid (no more fixed shift types — see the "Phase 9"
+section above for the current model). Only the actual homelab deployment
+of this latest work remains — an operational step on the user's own
 infrastructure, not a code change tracked here.
