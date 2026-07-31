@@ -11,9 +11,10 @@ client.
 ## Status
 
 All phases in the original build plan are done — login, a
-Users page (invite/resend/revoke/change role, phone number, Admin only),
-self-service registration from an invite link (optionally with a phone
-number for SMS), forgot/reset password, a Documents page
+Users page (invite by email and/or phone number/resend/revoke/change
+role, Admin only), self-service registration from an invite link (an
+email is collected at registration time if the invite didn't already
+have one), forgot/reset password, a Documents page
 (upload/replace/delete/version-history for Admins, view and download for
 everyone, with inline preview instead of a forced download for PDFs and
 images), a Calendar page (a 24-hour-block grid per day, no fixed shift

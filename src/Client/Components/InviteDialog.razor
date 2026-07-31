@@ -2,8 +2,8 @@
 
 <MudDialog>
     <DialogContent>
-        <MudTextField T="string" Label="Email" Variant="Variant.Outlined" @bind-Value="_email" />
-        <MudTextField T="string" Label="Phone number (optional, sends the invite via text too)" Variant="Variant.Outlined"
+        <MudTextField T="string" Label="Email (optional if phone number is provided)" Variant="Variant.Outlined" @bind-Value="_email" />
+        <MudTextField T="string" Label="Phone number (optional if email is provided; sends the invite via text)" Variant="Variant.Outlined"
             Class="mt-4" @bind-Value="_phoneNumber" />
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
@@ -30,12 +30,20 @@
 
     private async Task SubmitAsync()
     {
-        _busy = true;
         _errorMessage = null;
+
+        if (string.IsNullOrWhiteSpace(_email) && string.IsNullOrWhiteSpace(_phoneNumber))
+        {
+            _errorMessage = "Provide an email or phone number.";
+            return;
+        }
+
+        _busy = true;
         try
         {
+            string? email = string.IsNullOrWhiteSpace(_email) ? null : _email;
             string? phoneNumber = string.IsNullOrWhiteSpace(_phoneNumber) ? null : _phoneNumber;
-            await UsersClient.InviteAsync(null, new CreateInviteRequest { Email = _email, PhoneNumber = phoneNumber });
+            await UsersClient.InviteAsync(null, new CreateInviteRequest { Email = email, PhoneNumber = phoneNumber });
             MudDialog.Close(DialogResult.Ok(true));
         }
         catch (ApiException ex)

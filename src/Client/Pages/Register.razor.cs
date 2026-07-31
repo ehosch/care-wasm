@@ -17,14 +17,36 @@ public partial class Register
 
     private readonly RegisterRequest _model = new();
     private string? _token;
+    private string _email = string.Empty;
+    private bool _requiresEmail;
+    private bool _loading = true;
     private string _confirmPassword = string.Empty;
     private bool _smsConsent;
     private bool _busy;
     private string? _errorMessage;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         _token = Token;
+        if (string.IsNullOrEmpty(_token))
+        {
+            _loading = false;
+            return;
+        }
+
+        try
+        {
+            var info = await UsersClient.GetInviteInfoAsync(_token, null);
+            _requiresEmail = info.RequiresEmail;
+        }
+        catch (ApiException ex)
+        {
+            _errorMessage = ApiErrorHelper.GetFriendlyMessage(ex);
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task SubmitAsync()
@@ -34,6 +56,12 @@ public partial class Register
         if (_model.Password != _confirmPassword)
         {
             _errorMessage = "Passwords don't match.";
+            return;
+        }
+
+        if (_requiresEmail && string.IsNullOrWhiteSpace(_email))
+        {
+            _errorMessage = "Email is required.";
             return;
         }
 
@@ -47,6 +75,7 @@ public partial class Register
         try
         {
             _model.Token = _token!;
+            _model.Email = _requiresEmail ? _email : null;
             await UsersClient.RegisterAsync(null, _model);
             Navigation.NavigateTo("/login");
         }

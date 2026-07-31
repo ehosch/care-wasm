@@ -415,6 +415,37 @@ a plain text field.
   pre-selected" requirement. Don't default it to `true` based on the
   loaded phone number.
 
+## Phase 12 — invite by phone number only
+
+Admins can now create an invite with just a phone number, no email
+required, now that SMS is set up via Twilio.
+
+- **`Components/InviteDialog.razor`** — Email and Phone number fields are
+  both optional now; a client-side check (before ever calling the API)
+  rejects submitting with both blank, mirroring the same rule
+  `CreateInviteRequest` enforces server-side.
+- **`Pages/Register.razor`/`.razor.cs`** — on init, calls the new
+  `IUsersClient.GetInviteInfoAsync(token, null)` to learn whether this
+  invite already has an email (`RequiresEmail: false`) or needs one
+  collected here (`RequiresEmail: true`); the Email field only renders
+  (above Name) when required, and is validated client-side before
+  submit. Shows a loading spinner while that check is in flight, same
+  `_loading` pattern `Account.razor` already uses.
+- **`Client.Infrastructure/Auth/Jwt/JwtAuthenticationHeaderHandler.cs`**
+  gained `/api/users/invite-info` in `AnonymousPaths` — missed on the
+  first implementation pass and caught via live testing: a logged-out
+  visitor following a real invite link got force-redirected to `/login`
+  before `GetInviteInfoAsync` ever got a chance to run. Same documented
+  gotcha as every other `[AllowAnonymous]` care-webapi route (see the
+  Phase 1 gotcha above and this repo's own note in the "Auth" section
+  below) — don't forget it again for the next one.
+- **`Pages/Users.razor`**: `@context.Email` → `@(context.Email ?? "—")` —
+  `UserDto.Email` is `string?` now (a phone-only invited user has none
+  until they register), matching the existing null-`PhoneNumber` display
+  convention already on the same table.
+- NSwag regen needed for the changed `CreateInviteRequest`/`RegisterRequest`/
+  `UserDto` shapes and the new `GetInviteInfoAsync`/`InviteInfoDto`.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -539,6 +570,8 @@ page + Home page display + invitation emails/texts), a link on the
 replacement-requested notification, and shift times on the Replacement
 Requests page. Phase 11 added a self-service "My Account" page (email
 change with confirmation, phone number, password change) available to
-every logged-in user. Only the actual homelab deployment of this latest
-work remains — an operational step on the user's own infrastructure, not
-a code change tracked here.
+every logged-in user. Phase 12 let Admins invite by phone number alone,
+with the invitee setting their own email on the Register page before
+their account activates. Only the actual homelab deployment of this
+latest work remains — an operational step on the user's own
+infrastructure, not a code change tracked here.

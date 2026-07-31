@@ -24,7 +24,7 @@
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Email">@(context.Email ?? "—")</MudTd>
         <MudTd DataLabel="Phone">
             @(context.PhoneNumber ?? "—")
             <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Edit" OnClick="@(() => OpenEditPhoneNumberDialog(context))" />

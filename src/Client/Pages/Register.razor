@@ -10,11 +10,23 @@
 {
     <MudAlert Severity="Severity.Error">This invite link is missing a token.</MudAlert>
 }
+else if (_loading)
+{
+    <div class="d-flex justify-center">
+        <MudProgressCircular Indeterminate="true" />
+    </div>
+}
 else
 {
     <EditForm Model="@_model" OnValidSubmit="SubmitAsync">
         <MudGrid>
             <DataAnnotationsValidator />
+            @if (_requiresEmail)
+            {
+                <MudItem xs="12">
+                    <MudTextField T="string" Label="Email" Variant="Variant.Outlined" @bind-Value="_email" />
+                </MudItem>
+            }
             <MudItem xs="12">
                 <MudTextField T="string" Label="Name" Variant="Variant.Outlined" @bind-Value="_model.Name"
                     For="@(() => _model.Name)" />
