@@ -88,12 +88,19 @@ needing anonymous access must add `@attribute [AllowAnonymous]` explicitly
 - The generated `ShiftDto.Date` is `System.DateTimeOffset`, not `DateOnly`
   (see the NSwag gotcha below) — `ShiftCalendar.razor.cs`'s `FindShift`
   compares via `DateOnly.FromDateTime(s.Date.Date) == date`.
-- The 7-column grid overflows the viewport at narrower widths with no
-  scroll container currently wired up correctly (a wrapping
-  `overflow-x: auto` `div` didn't constrain it — likely needs a `min-width`
-  fix upstream in `BaseLayout`'s flex container). Known, deferred to
-  `CLAUDE_CARE.md`'s Phase 7 "mobile-responsive pass on the calendar view" —
-  don't spend time on it before then.
+- **Fixed in Phase 7**: the 7-column grid used to overflow the viewport at
+  narrower widths instead of scrolling within its own `overflow-x: auto`
+  wrapper `div`. Root cause was `Layout/MainLayout.razor`'s `MudContainer`
+  (inside `MudMainContent`/`MudLayout`'s flex layout) having no
+  `min-width: 0` — flex items default to `min-width: auto`, so a wide child
+  can't be compressed by its ancestor, and the whole page stretches instead
+  of the child scrolling. Fix was one line: `Style="min-width: 0;"` on that
+  `MudContainer` — global, not calendar-specific, so it also applies to any
+  future wide content on any page. Verified by injecting a same-origin
+  `<iframe>` sized ~390px wide into a logged-in tab (the browser-automation
+  `resize_window` tool didn't actually shrink this environment's Chrome
+  window — an iframe gets its own independent viewport for layout purposes,
+  which works just as well for testing this kind of flex/overflow bug).
 
 ## Phase 4 pages (Self-Assign & Replacement Requests)
 
@@ -280,11 +287,7 @@ place, silently serving the old baked-in URL.
 
 ## Roadmap
 
-See `../CLAUDE_CARE.md` for the full phased plan. Phase 0 (scaffold),
-Phase 1 (Auth & Users — invite/register/roles/forgot-password), Phase 2
-(Documents — upload/replace/delete/version-history), Phase 3 (Care Calendar
-Core — week-grid view, admin direct-assign), Phase 4 (Self-Assign &
-Replacement Requests — claim, request/cancel/claim replacement, open queue),
-Phase 5 (Shift Notes — per-shift comment thread), and Phase 6
-(Notifications — phone number collection, backend email/SMS dispatch) are
-done. Only Phase 7 (deploy polish, mobile-responsive calendar) remains.
+See `../CLAUDE_CARE.md` for the full phased plan. Every phase is done,
+including Phase 7's mobile-responsive calendar fix. Only the actual
+homelab deployment remains — an operational step on the user's own
+infrastructure, not a code change tracked here.

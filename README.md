@@ -10,7 +10,7 @@ client.
 
 ## Status
 
-Phase 0 (scaffold) through Phase 6 (Notifications) are done — login, a
+All phases in the original build plan are done — login, a
 Users page (invite/resend/revoke/change role, phone number, Admin only),
 self-service registration from an invite link (optionally with a phone
 number for SMS), forgot/reset password, a Documents page
