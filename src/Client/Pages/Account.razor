@@ -1,0 +1,71 @@
+@page "/account"
+@using Care.Wasm.Client.Infrastructure.ApiClient
+
+<PageTitle>My Account</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">My Account</MudText>
+
+@if (_loading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <MudText Typo="Typo.caption">Signed in as</MudText>
+    <MudText Class="mb-4">@_currentEmail</MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h6" Class="mb-2">Change email</MudText>
+        <MudTextField T="string" @bind-Value="_newEmail" Label="New email" Variant="Variant.Outlined"
+            Margin="Margin.Dense" Style="max-width:400px;" />
+        <div class="mt-2">
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_emailBusy" OnClick="RequestEmailChangeAsync">
+                Send confirmation link
+            </MudButton>
+        </div>
+        @if (_emailSuccess)
+        {
+            <MudAlert Severity="Severity.Success" Class="mt-2">Check @_newEmail for a confirmation link. Your email won't change until you click it.</MudAlert>
+        }
+        @if (!string.IsNullOrEmpty(_emailError))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@_emailError</MudAlert>
+        }
+    </MudPaper>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="1">
+        <MudText Typo="Typo.h6" Class="mb-2">Phone number</MudText>
+        <MudTextField T="string" @bind-Value="_phoneNumber" Label="Phone number" Variant="Variant.Outlined"
+            Margin="Margin.Dense" Style="max-width:400px;" />
+        <div class="mt-2">
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_phoneBusy" OnClick="SavePhoneAsync">Save</MudButton>
+        </div>
+        @if (_phoneSaved)
+        {
+            <MudText Color="Color.Success" Class="mt-2">Saved.</MudText>
+        }
+        @if (!string.IsNullOrEmpty(_phoneError))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@_phoneError</MudAlert>
+        }
+    </MudPaper>
+
+    <MudPaper Class="pa-4" Elevation="1">
+        <MudText Typo="Typo.h6" Class="mb-2">Change password</MudText>
+        <MudTextField T="string" @bind-Value="_currentPassword" Label="Current password" InputType="InputType.Password"
+            Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:400px;display:block;" Class="mb-2" />
+        <MudTextField T="string" @bind-Value="_newPassword" Label="New password" InputType="InputType.Password"
+            Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:400px;display:block;" Class="mb-2" />
+        <MudTextField T="string" @bind-Value="_confirmPassword" Label="Confirm new password" InputType="InputType.Password"
+            Variant="Variant.Outlined" Margin="Margin.Dense" Style="max-width:400px;display:block;" />
+        <div class="mt-2">
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_passwordBusy" OnClick="ChangePasswordAsync">
+                Change password
+            </MudButton>
+        </div>
+        @if (!string.IsNullOrEmpty(_passwordError))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-2">@_passwordError</MudAlert>
+        }
+    </MudPaper>
+}

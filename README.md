@@ -22,9 +22,12 @@ existing shift to resize or delete it, growing into a neighbor
 shrinks/absorbs it and shrinking away lets a neighbor reclaim the time, a
 per-shift note thread and replacement-request actions), a Replacement
 Requests page (open-queue view with each shift's time range, claim,
-cancel-your-own), and a Settings page (Admin-only patient name, shown on
-the Home page and in invitation emails/texts) all work. Validation and
-other API errors show as a plain, friendly message rather than raw JSON.
+cancel-your-own), a Settings page (Admin-only patient name, shown on
+the Home page and in invitation emails/texts), and a My Account page
+(available to everyone — update your own phone number and password, and
+request an email change with a confirmation link sent to the new
+address) all work. Validation and other API errors show as a plain,
+friendly message rather than raw JSON.
 Email/SMS notifications fire automatically from the backend for
 shift-assigned/replacement-requested/replacement-claimed/shift-removed/
 shift-time-changed/document-uploaded events, with the

@@ -16,7 +16,8 @@ public class JwtAuthenticationHeaderHandler : DelegatingHandler
         "/api/tokens",
         "/api/users/register",
         "/api/users/forgot-password",
-        "/api/users/reset-password"
+        "/api/users/reset-password",
+        "/api/users/confirm-email-change"
     };
 
     private readonly IAccessTokenProviderAccessor _tokenProviderAccessor;

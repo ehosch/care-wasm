@@ -347,6 +347,42 @@ Four independent fixes from live testing after Phase 9 shipped.
   environment's `resize_window` tool doesn't actually shrink the real
   Chrome window).
 
+## Phase 11 — self-service My Account page
+
+- **New `Pages/Account.razor`/`.razor.cs`** (`/account`, `[Authorize]`, no
+  role restriction — every member gets a "My Account" `NavMenu.razor` link,
+  unlike "Users"/"Settings" which stay Admin-only) — three independent
+  `MudPaper` sections, each with its own busy/error/success state so one
+  section's error doesn't block another: change email, phone number,
+  change password. Fetches `UsersClient.GetMeAsync(null)` on init to
+  prefill the current email/phone.
+- **Change password calls `AuthService.LogoutAsync()` on success** — the
+  cached JWT still has stale claims and there's no server-side session to
+  invalidate otherwise, so forcing a fresh login is simplest. This is
+  fine here because the user is already mid-session and expects the
+  redirect; it's the *wrong* call on the confirm-email-change page (next
+  bullet), where it would hide the success message before the user could
+  read it.
+- **New `Pages/ConfirmEmailChange.razor`/`.razor.cs`** (`[AllowAnonymous]`)
+  mirrors `ResetPassword.razor`'s exact pattern —
+  `[SupplyParameterFromQuery]` for `userId`/`newEmail`/`token`, a Confirm
+  button, then a success state with a manual "Sign in" `MudLink`.
+  **Deliberately does NOT call `AuthService.LogoutAsync()`** on success,
+  unlike `Account.razor`'s password-change flow above —
+  `LogoutAsync()` unconditionally navigates to `/login` immediately,
+  which would navigate away before the "Your email has been updated..."
+  success message ever rendered. Caught during implementation, before it
+  reached testing — don't add it back.
+- **`Client.Infrastructure/Auth/Jwt/JwtAuthenticationHeaderHandler.cs`
+  gained `/api/users/confirm-email-change` in `AnonymousPaths`** — same
+  known gotcha as every other `[AllowAnonymous]` care-webapi route (see
+  the "Auth" section below); verified live by clearing `localStorage` in
+  a fresh tab and confirming the confirmation link's page loads directly
+  without a force-redirect to `/login`.
+- NSwag regen needed for `IUsersClient.GetMeAsync`/`ChangePasswordAsync`/
+  `RequestEmailChangeAsync`/`ConfirmEmailChangeAsync` and their request
+  DTOs.
+
 ## Auth
 
 `Client.Infrastructure/Auth/Jwt/JwtAuthenticationService.cs` — JWT-only
@@ -469,6 +505,8 @@ section above for the current model). Phase 10 added inline PDF/image
 preview on the Documents page, an Admin-editable patient name (Settings
 page + Home page display + invitation emails/texts), a link on the
 replacement-requested notification, and shift times on the Replacement
-Requests page. Only the actual homelab deployment of this latest work
-remains — an operational step on the user's own infrastructure, not a
-code change tracked here.
+Requests page. Phase 11 added a self-service "My Account" page (email
+change with confirmation, phone number, password change) available to
+every logged-in user. Only the actual homelab deployment of this latest
+work remains — an operational step on the user's own infrastructure, not
+a code change tracked here.
