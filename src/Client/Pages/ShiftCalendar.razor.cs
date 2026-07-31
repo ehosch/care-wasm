@@ -1,13 +1,14 @@
 using System.Security.Claims;
 using Care.Wasm.Client.Components;
 using Care.Wasm.Client.Infrastructure.ApiClient;
+using Care.Wasm.Client.Infrastructure.Theme;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MudBlazor;
 
 namespace Care.Wasm.Client.Pages;
 
-public partial class ShiftCalendar
+public partial class ShiftCalendar : IDisposable
 {
     private enum CellKind
     {
@@ -33,6 +34,9 @@ public partial class ShiftCalendar
     [Inject]
     private AuthenticationStateProvider AuthStateProvider { get; set; } = default!;
 
+    [Inject]
+    private IThemeService ThemeService { get; set; } = default!;
+
     private DateOnly _weekStart;
     private List<ShiftDto> _shifts = new();
     private ICollection<UserDto> _activeUsers = new List<UserDto>();
@@ -53,6 +57,12 @@ public partial class ShiftCalendar
 
     protected override async Task OnInitializedAsync()
     {
+        // Cell colors are computed once per render in CellStyle (plain inline styles, not
+        // MudBlazor's CSS-variable-driven theming that every other page relies on), so a
+        // dark-mode toggle elsewhere in the app won't repaint this grid without this
+        // subscription forcing a re-render while this page happens to be open.
+        ThemeService.OnChange += StateHasChanged;
+
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _currentUserId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         _isAdmin = authState.User.IsInRole("Admin");
@@ -150,22 +160,36 @@ public partial class ShiftCalendar
 
     private string CellStyle(CellInfo info)
     {
-        string background = info.Kind switch
+        bool dark = ThemeService.IsDarkMode;
+
+        string background = (info.Kind, dark) switch
         {
-            CellKind.Pending => "#bbdefb",
-            CellKind.Uncovered => "#fafafa",
-            CellKind.Shift when info.Shift!.Status == ShiftStatus.ReplacementRequested => "#fff8e1",
-            CellKind.Shift => "#e8f5e9",
+            (CellKind.Pending, false) => "#bbdefb",
+            (CellKind.Pending, true) => "#0d47a1",
+            (CellKind.Uncovered, false) => "#fafafa",
+            (CellKind.Uncovered, true) => "#2c2c2c",
+            (CellKind.Shift, _) when info.Shift!.Status == ShiftStatus.ReplacementRequested => dark ? "#5d4200" : "#fff8e1",
+            (CellKind.Shift, false) => "#e8f5e9",
+            (CellKind.Shift, true) => "#1b5e20",
             _ => "transparent",
         };
+
+        // The pastel light-mode palette reads fine with the browser's default (near-black)
+        // text color, but the same near-black text is nearly invisible against these darker
+        // backgrounds in dark mode — cell text needs an explicit light color there instead.
+        string color = dark && info.Kind == CellKind.Shift ? "#ffffff" : "inherit";
 
         bool clickable = info.Kind is CellKind.Uncovered or CellKind.Pending
             || (info.Kind == CellKind.Shift && CanEdit(info.Shift!));
 
-        string borderTop = info.IsFirstHour ? "1px solid #9e9e9e" : "1px solid #eeeeee";
-        string borderBottom = info.IsLastHour ? "1px solid #9e9e9e" : "none";
+        string borderColorStrong = dark ? "#616161" : "#9e9e9e";
+        string borderColorWeak = dark ? "#424242" : "#eeeeee";
+        string borderColorSide = dark ? "#444444" : "#dddddd";
 
-        return $"background-color:{background};border-left:1px solid #dddddd;border-right:1px solid #dddddd;" +
+        string borderTop = info.IsFirstHour ? $"1px solid {borderColorStrong}" : $"1px solid {borderColorWeak}";
+        string borderBottom = info.IsLastHour ? $"1px solid {borderColorStrong}" : "none";
+
+        return $"background-color:{background};color:{color};border-left:1px solid {borderColorSide};border-right:1px solid {borderColorSide};" +
                $"border-top:{borderTop};border-bottom:{borderBottom};height:22px;min-width:72px;vertical-align:top;" +
                $"cursor:{(clickable ? "pointer" : "default")};";
     }
@@ -421,5 +445,10 @@ public partial class ShiftCalendar
         {
             await LoadShiftsAsync();
         }
+    }
+
+    public void Dispose()
+    {
+        ThemeService.OnChange -= StateHasChanged;
     }
 }

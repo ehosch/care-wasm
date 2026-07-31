@@ -586,13 +586,36 @@ new app-wide UI feature all at once, not a small tweak):
   icon button immediately before Logout — shows a moon in light mode /
   sun in dark mode (icon represents the mode you'd switch *to*), calling
   `ThemeService.ToggleAsync()`.
-- **Known cosmetic gap, not fixed as part of this phase**: the Calendar
-  grid's shift-block background colors (green/amber for covered, light
-  gray for uncovered) are hardcoded light-mode colors with no dark-mode
-  variant, so shift-cell text has noticeably lower contrast in dark mode.
-  Flagged to the user rather than silently expanding scope — this phase
-  was specifically "add a toggle," not "audit every page's dark-mode
-  contrast." Worth a follow-up pass if it's bothersome in practice.
+- **Follow-up fix: the Calendar grid's shift-block colors needed a
+  dark-mode variant.** `ShiftCalendar.razor.cs`'s `CellStyle` computes
+  plain inline `style="..."` strings (background/border/text color) in
+  C#, not MudBlazor's CSS-variable-driven theming that every other page
+  relies on — so the original pastel light-mode palette (light green/amber/blue/gray
+  with default near-black text) stayed fixed regardless of theme, and in
+  dark mode the browser's light default text color became barely visible
+  against those same pale backgrounds. `CellStyle` now branches on
+  `ThemeService.IsDarkMode` for both background and border colors, and
+  explicitly sets `color:#ffffff` on `CellKind.Shift` cells in dark mode
+  (light-mode cells still rely on inherited default text color, unchanged).
+  Uncovered/Pending backgrounds don't need a paired text color — only
+  `CellKind.Shift` cells ever render inner text.
+- **This surfaced a second, more general gap: components with
+  C#-computed inline styles don't repaint on a theme toggle unless they
+  explicitly listen for it.** Purely CSS-variable-styled MudBlazor
+  content (`MudPaper`, `MudButton`, the nav drawer, etc.) updates
+  instantly and automatically when `MudThemeProvider.IsDarkMode` changes,
+  because it's driven by CSS custom properties, not a Blazor re-render.
+  `ShiftCalendar`'s colors, by contrast, are computed once per component
+  render — toggling the theme *while already on the Calendar page*
+  updated the app bar/chrome instantly but left the grid's colors stale
+  until navigating away and back (which creates a fresh component
+  instance that reads the current theme value). Fixed the same way
+  `BaseLayout.razor` already does it: `ShiftCalendar` now implements
+  `IDisposable`, subscribes `ThemeService.OnChange += StateHasChanged` in
+  `OnInitializedAsync`, and unsubscribes in `Dispose`. **Any future page
+  with C#-computed (not pure-MudBlazor-CSS) styling that depends on
+  light/dark mode needs this same subscription** — it won't repaint for
+  free just because `BaseLayout` re-rendered.
 
 ## Auth
 
